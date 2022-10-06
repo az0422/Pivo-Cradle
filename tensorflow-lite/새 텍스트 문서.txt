@@ -1,6 +1,6 @@
-python save_model.py --weights ./weights/yolov4-tiny_best.weights --output ./checkpoints/yolov4-tiny-320 --input_size 320 --model yolov4 --tiny --framework tflite --cfg ./weights/yolov4-tiny.cfg
+python save_model.py --weights ./weights/yolov4-tiny_best.weights --output ./checkpoints/yolov4-tiny-416 --input_size 416 --model yolov4 --tiny --framework tflite --cfg ./weights/yolov4-tiny.cfg
 
-python convert_tflite.py --weights ./checkpoints/yolov4-tiny-320 --output ./checkpoints/yolov4-tiny-320.tflite
+python convert_tflite.py --weights ./checkpoints/yolov4-tiny-416 --output ./checkpoints/yolov4-tiny-416.tflite
 
 python convert_tflite.py --weights ./checkpoints/yolov4-tiny-256 --output ./checkpoints/yolov4-tiny-256-fp16.tflite --quantize_mode float64
 

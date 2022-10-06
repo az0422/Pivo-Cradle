@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import app.pivo.android.basicsdk.PivoSdk;
 import app.pivo.android.basicsdkdemo.customview.OverlayView;
 import app.pivo.android.basicsdkdemo.customview.OverlayView.DrawCallback;
 import app.pivo.android.basicsdkdemo.env.BorderedText;
@@ -216,7 +217,22 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                             }
                         }
                         if (results.size() > 0) {
-                            float position = results.get(0).getLocation().right - results.get(0).getLocation().left;
+                            float position = results.get(0).getLocation().centerX();
+
+                            runInBackground(() -> {
+                                if (position < TF_OD_API_INPUT_SIZE / 2 - 10) {
+                                    PivoSdk.getInstance().turnLeft(1);
+                                } else if (TF_OD_API_INPUT_SIZE / 2 + 10 < position) {
+                                    PivoSdk.getInstance().turnRight(1);
+                                } else {
+                                    PivoSdk.getInstance().stop();
+                                }
+                            });
+
+                            runOnUiThread(() -> {
+
+                            });
+
                             Log.i("Position", "" + position);
                         }
 
@@ -338,6 +354,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 break;
         }
 
+        Classifier temp = detector;
         try {
             detector = YoloV4Classifier.create(
                     getAssets(),
@@ -347,12 +364,15 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     input_size,
                     output_shape,
                     true);
+
+            TF_OD_API_INPUT_SIZE = input_size;
         } catch (IOException e) {
             e.printStackTrace();
+            detector = temp;
         }
 
         ((TextView)findViewById(R.id.selected_object)).setText(selectedObject);
         ((TextView)findViewById(R.id.select_model)).setText(model_name);
-        TF_OD_API_INPUT_SIZE = input_size;
+
     }
 }
