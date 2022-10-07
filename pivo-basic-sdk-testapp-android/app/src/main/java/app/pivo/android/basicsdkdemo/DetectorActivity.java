@@ -58,6 +58,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static final Logger LOGGER = new Logger();
 
     private static int TF_OD_API_INPUT_SIZE = 320;
+    private static float CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
     private static int[] TF_OD_API_OUTPUT_SHAPE = {1500, 1500};
     private static final boolean TF_OD_API_IS_QUANTIZED = false;
     private static final String TF_OD_API_MODEL_FILE = "yolov4-tiny-320.tflite";
@@ -158,8 +159,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         tracker.setFrameConfiguration(previewWidth, previewHeight, sensorOrientation);
     }
 
-    private float previousCenter = previewWidth / 2;
-
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
@@ -220,10 +219,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                             float position = results.get(0).getLocation().centerX();
 
                             runInBackground(() -> {
-                                if (position < TF_OD_API_INPUT_SIZE / 2 - 20) {
-                                    PivoSdk.getInstance().turnLeftContinuously(30);
-                                } else if (TF_OD_API_INPUT_SIZE / 2 + 20 < position) {
-                                    PivoSdk.getInstance().turnRightContinuously(30);
+                                if (position < CENTER_POSITION - 20) {
+                                    PivoSdk.getInstance().turnLeftContinuously((int)(30 * (1 - (CENTER_POSITION - position) / CENTER_POSITION)));
+                                } else if (CENTER_POSITION + 20 < position) {
+                                    PivoSdk.getInstance().turnRightContinuously((int)(30 * (1 - (position - CENTER_POSITION) / CENTER_POSITION)));
                                 } else {
                                     PivoSdk.getInstance().stop();
                                 }
