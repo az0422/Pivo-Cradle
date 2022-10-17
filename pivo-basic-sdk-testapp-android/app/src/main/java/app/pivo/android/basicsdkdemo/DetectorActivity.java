@@ -208,7 +208,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     public void run() {
                         LOGGER.i("Running detection on image " + currTimestamp);
                         final long startTime = SystemClock.uptimeMillis();
-                        Log.i("croppedBitmap", "" + croppedBitmap);
 
                         List<Classifier.Recognition> temp = new ArrayList<>();
                         try {
@@ -375,7 +374,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         try {
             TF_OD_API_INPUT_SIZE = input_size;
             croppedBitmap = Bitmap.createBitmap(input_size, input_size, Config.ARGB_8888);
-            Log.i("nCroppedBitmap", "" + croppedBitmap);
 
             frameToCropTransform =
                     ImageUtils.getTransformationMatrix(
@@ -385,6 +383,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             cropToFrameTransform = new Matrix();
             frameToCropTransform.invert(cropToFrameTransform);
+
+            CENTER_POSITION = input_size / 2;
 
             detector = YoloV4Classifier.create(
                     getAssets(),
