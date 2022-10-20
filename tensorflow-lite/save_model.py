@@ -33,7 +33,7 @@ def save_tf():
 
   input_layer = tf.keras.layers.Input([FLAGS.input_size, FLAGS.input_size, 3])
   
-  feature_maps, maps_id, anchors = YOLO(input_layer, NUM_CLASS, open(FLAGS.cfg, "r").read())
+  feature_maps, maps_id, anchors = YOLO(input_layer, NUM_CLASS, open(FLAGS.cfg, "r").read(), is_tiny = FLAGS.tiny, model = FLAGS.model)
   ANCHORS = utils.get_anchors(anchors, FLAGS.tiny)
   bbox_tensors = []
   prob_tensors = []

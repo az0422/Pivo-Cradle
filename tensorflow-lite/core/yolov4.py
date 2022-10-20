@@ -61,39 +61,153 @@ def layer_maxpool(input_layer, config, layers):
 def layer_upsample(input_layer, config, layers):
     return common.upsample(input_layer)
 
-def YOLO(input_layer, NUM_CLASS, cfg):
-    out_layers = []
-    out_layers_id = []
-    layers = []
-    anchors = []
+def YOLO(input_layer, NUM_CLASS, cfg, is_tiny = False, model = "yolov4"):
+    if is_tiny:
+        out_layers = []
+        out_layers_id = []
+        layers = []
+        anchors = []
     
-    model_list = model_parse(cfg)
-    print(model_list)
+        model_list = model_parse(cfg)
+        print(model_list)
     
-    layer_name_dict = { "convolutional": 0, "route": 1, "maxpool": 2, "upsample": 3 }
-    func_label = [layer_convolutional, layer_route, layer_maxpool, layer_upsample]
+        layer_name_dict = { "convolutional": 0, "route": 1, "maxpool": 2, "upsample": 3 }
+        func_label = [layer_convolutional, layer_route, layer_maxpool, layer_upsample]
     
-    for record in model_list:
-        layer_name = record["name"]
+        for record in model_list:
+            layer_name = record["name"]
         
-        if layer_name in layer_name_dict.keys():
-            input_layer = func_label[layer_name_dict[layer_name]](input_layer, record, layers)
-            layers.append(input_layer)
-        elif layer_name == "yolo":
-            out_layer = layers[-1]
-            out_layer_id_int = int(re.findall("conv2d_([0-9]*)", str(out_layer))[0])
+            if layer_name in layer_name_dict.keys():
+                input_layer = func_label[layer_name_dict[layer_name]](input_layer, record, layers)
+                layers.append(input_layer)
+            elif layer_name == "yolo":
+                out_layer = layers[-1]
+                out_layer_id_int = int(re.findall("conv2d_([0-9]*)", str(out_layer))[0])
             
-            out_layers.insert(0, out_layer)
-            out_layers_id.insert(0, out_layer_id_int)
-            layers.append(None)
+                out_layers.insert(0, out_layer)
+                out_layers_id.insert(0, out_layer_id_int)
+                layers.append(None)
             
-            anchors = eval("[%s]" % record["anchors"])
+                anchors = eval("[%s]" % record["anchors"])
             
-    out_layers_id.reverse()
-    print(out_layers, out_layers_id)
-    print("model_size:", len(layers))
+        out_layers_id.reverse()
+        print(out_layers, out_layers_id)
+        print("model_size:", len(layers))
     
-    return out_layers, out_layers_id, anchors
+        return out_layers, out_layers_id, anchors
+    else:
+        model_list = model_parse(cfg)
+        anchors = []
+
+        for record in model_list:
+            layer_name = record["name"]
+            if layer_name == "yolo":
+                anchors = eval("[%s]" % record["anchors"])
+
+        if model == 'yolov4':
+            return YOLOv4(input_layer, NUM_CLASS) + [anchors]
+        elif model == 'yolov3':
+            return YOLOv3(input_layer, NUM_CLASS) + [anchors]
+
+def YOLOv3(input_layer, NUM_CLASS):
+    route_1, route_2, conv = backbone.darknet53(input_layer)
+
+    conv = common.convolutional(conv, (1, 1, 1024, 512))
+    conv = common.convolutional(conv, (3, 3, 512, 1024))
+    conv = common.convolutional(conv, (1, 1, 1024, 512))
+    conv = common.convolutional(conv, (3, 3, 512, 1024))
+    conv = common.convolutional(conv, (1, 1, 1024, 512))
+
+    conv_lobj_branch = common.convolutional(conv, (3, 3, 512, 1024))
+    conv_lbbox = common.convolutional(conv_lobj_branch, (1, 1, 1024, 3 * (NUM_CLASS + 5)), activate=False, bn=False)
+
+    conv = common.convolutional(conv, (1, 1, 512, 256))
+    conv = common.upsample(conv)
+
+    conv = tf.concat([conv, route_2], axis=-1)
+
+    conv = common.convolutional(conv, (1, 1, 768, 256))
+    conv = common.convolutional(conv, (3, 3, 256, 512))
+    conv = common.convolutional(conv, (1, 1, 512, 256))
+    conv = common.convolutional(conv, (3, 3, 256, 512))
+    conv = common.convolutional(conv, (1, 1, 512, 256))
+
+    conv_mobj_branch = common.convolutional(conv, (3, 3, 256, 512))
+    conv_mbbox = common.convolutional(conv_mobj_branch, (1, 1, 512, 3 * (NUM_CLASS + 5)), activate=False, bn=False)
+
+    conv = common.convolutional(conv, (1, 1, 256, 128))
+    conv = common.upsample(conv)
+
+    conv = tf.concat([conv, route_1], axis=-1)
+
+    conv = common.convolutional(conv, (1, 1, 384, 128))
+    conv = common.convolutional(conv, (3, 3, 128, 256))
+    conv = common.convolutional(conv, (1, 1, 256, 128))
+    conv = common.convolutional(conv, (3, 3, 128, 256))
+    conv = common.convolutional(conv, (1, 1, 256, 128))
+
+    conv_sobj_branch = common.convolutional(conv, (3, 3, 128, 256))
+    conv_sbbox = common.convolutional(conv_sobj_branch, (1, 1, 256, 3 * (NUM_CLASS + 5)), activate=False, bn=False)
+
+    return [conv_sbbox, conv_mbbox, conv_lbbox]
+
+def YOLOv4(input_layer, NUM_CLASS):
+    route_1, route_2, conv = backbone.cspdarknet53(input_layer)
+
+    route = conv
+    conv = common.convolutional(conv, (1, 1, 512, 256))
+    conv = common.upsample(conv)
+    route_2 = common.convolutional(route_2, (1, 1, 512, 256))
+    conv = tf.concat([route_2, conv], axis=-1)
+
+    conv = common.convolutional(conv, (1, 1, 512, 256))
+    conv = common.convolutional(conv, (3, 3, 256, 512))
+    conv = common.convolutional(conv, (1, 1, 512, 256))
+    conv = common.convolutional(conv, (3, 3, 256, 512))
+    conv = common.convolutional(conv, (1, 1, 512, 256))
+
+    route_2 = conv
+    conv = common.convolutional(conv, (1, 1, 256, 128))
+    conv = common.upsample(conv)
+    route_1 = common.convolutional(route_1, (1, 1, 256, 128))
+    conv = tf.concat([route_1, conv], axis=-1)
+
+    conv = common.convolutional(conv, (1, 1, 256, 128))
+    conv = common.convolutional(conv, (3, 3, 128, 256))
+    conv = common.convolutional(conv, (1, 1, 256, 128))
+    conv = common.convolutional(conv, (3, 3, 128, 256))
+    conv = common.convolutional(conv, (1, 1, 256, 128))
+
+    route_1 = conv
+    conv = common.convolutional(conv, (3, 3, 128, 256))
+    conv_sbbox = common.convolutional(conv, (1, 1, 256, 3 * (NUM_CLASS + 5)), activate=False, bn=False)
+
+    conv = common.convolutional(route_1, (3, 3, 128, 256), downsample=True)
+    conv = tf.concat([conv, route_2], axis=-1)
+
+    conv = common.convolutional(conv, (1, 1, 512, 256))
+    conv = common.convolutional(conv, (3, 3, 256, 512))
+    conv = common.convolutional(conv, (1, 1, 512, 256))
+    conv = common.convolutional(conv, (3, 3, 256, 512))
+    conv = common.convolutional(conv, (1, 1, 512, 256))
+
+    route_2 = conv
+    conv = common.convolutional(conv, (3, 3, 256, 512))
+    conv_mbbox = common.convolutional(conv, (1, 1, 512, 3 * (NUM_CLASS + 5)), activate=False, bn=False)
+
+    conv = common.convolutional(route_2, (3, 3, 256, 512), downsample=True)
+    conv = tf.concat([conv, route], axis=-1)
+
+    conv = common.convolutional(conv, (1, 1, 1024, 512))
+    conv = common.convolutional(conv, (3, 3, 512, 1024))
+    conv = common.convolutional(conv, (1, 1, 1024, 512))
+    conv = common.convolutional(conv, (3, 3, 512, 1024))
+    conv = common.convolutional(conv, (1, 1, 1024, 512))
+
+    conv = common.convolutional(conv, (3, 3, 512, 1024))
+    conv_lbbox = common.convolutional(conv, (1, 1, 1024, 3 * (NUM_CLASS + 5)), activate=False, bn=False)
+
+    return [conv_sbbox, conv_mbbox, conv_lbbox]
 
 def decode(conv_output, output_size, NUM_CLASS, STRIDES, ANCHORS, i, XYSCALE=[1,1,1], FRAMEWORK='tf'):
     if FRAMEWORK == 'trt':
