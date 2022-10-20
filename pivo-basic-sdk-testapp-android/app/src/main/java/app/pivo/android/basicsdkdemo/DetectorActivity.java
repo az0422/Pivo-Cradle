@@ -61,7 +61,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static float CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
     private static int[] TF_OD_API_OUTPUT_SHAPE = {2535, 2535};
     private static final boolean TF_OD_API_IS_QUANTIZED = false;
-    private static final String TF_OD_API_MODEL_FILE = "yolov4-tiny-480.tflite";
+    private static final String TF_OD_API_MODEL_FILE = "yolov4-tiny-418.tflite";
 
     private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/obj.names";
 
