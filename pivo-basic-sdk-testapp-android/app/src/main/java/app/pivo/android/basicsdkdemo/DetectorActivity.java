@@ -231,9 +231,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                             float position = results.get(0).getLocation().centerX();
 
                             runInBackground(() -> {
-                                if (position < CENTER_POSITION - 20) {
+                                if (position < CENTER_POSITION - TF_OD_API_INPUT_SIZE / 10) {
                                     PivoSdk.getInstance().turnLeftContinuously((int)(30 * (1 - (CENTER_POSITION - position) / CENTER_POSITION)));
-                                } else if (CENTER_POSITION + 20 < position) {
+                                } else if (CENTER_POSITION + TF_OD_API_INPUT_SIZE / 10 < position) {
                                     PivoSdk.getInstance().turnRightContinuously((int)(30 * (1 - (position - CENTER_POSITION) / CENTER_POSITION)));
                                 } else {
                                     PivoSdk.getInstance().stop();
