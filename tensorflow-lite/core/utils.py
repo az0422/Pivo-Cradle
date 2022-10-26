@@ -101,12 +101,13 @@ def read_class_names(class_file_name):
     return names
 
 def load_config(FLAGS):
-    if FLAGS.tiny:
+    if FLAGS.tiny and FLAGS.model == "yolov4":
         STRIDES = np.array(cfg.YOLO.STRIDES_TINY)
         ANCHORS = get_anchors(cfg.YOLO.ANCHORS_TINY, FLAGS.tiny)
         XYSCALE = cfg.YOLO.XYSCALE_TINY if FLAGS.model == 'yolov4' else [1, 1]
     else:
         STRIDES = np.array(cfg.YOLO.STRIDES)
+        ANCHORS = get_anchors(cfg.YOLO.ANCHORS, False)
         if FLAGS.model == 'yolov4':
             ANCHORS = get_anchors(cfg.YOLO.ANCHORS, FLAGS.tiny)
         elif FLAGS.model == 'yolov3':

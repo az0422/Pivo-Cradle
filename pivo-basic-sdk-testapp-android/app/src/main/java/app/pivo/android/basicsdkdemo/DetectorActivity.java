@@ -59,14 +59,15 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private static int TF_OD_API_INPUT_SIZE = 416;
     private static float CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
-    private static int[] TF_OD_API_OUTPUT_SHAPE = {2535, 2535};
+    private static int[] TF_OD_API_OUTPUT_SHAPE = { 2535, 2535 };
     private static final boolean TF_OD_API_IS_QUANTIZED = false;
-    private static final String TF_OD_API_MODEL_FILE = "yolov4-tiny-416.tflite";
+    private static boolean is_tiny = false;
+    private static final String TF_OD_API_MODEL_FILE = "yolo-big-416.tflite";
 
     private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/obj.names";
 
     private static final DetectorMode MODE = DetectorMode.TF_OD_API;
-    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.6f;
+    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.5f;
     private static final boolean MAINTAIN_ASPECT = false;
     private static final Size DESIRED_PREVIEW_SIZE = new Size(1920 , 1080);
     private static final boolean SAVE_PREVIEW_BITMAP = false;
@@ -119,7 +120,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                             TF_OD_API_IS_QUANTIZED,
                             TF_OD_API_INPUT_SIZE,
                             TF_OD_API_OUTPUT_SHAPE,
-                            true);
+                            is_tiny);
             cropSize = TF_OD_API_INPUT_SIZE;
         } catch (final IOException e) {
             e.printStackTrace();
@@ -341,6 +342,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 modelSelect = TF_OD_API_MODEL_FILE;
                 output_shape = new int[]{ 2535, 2535 };
                 input_size = 416;
+                is_tiny = false;
                 break;
 
             case R.id.model_speed:
@@ -348,6 +350,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 modelSelect = "yolov4-tiny-320-lite.tflite";
                 output_shape = new int[]{ 1500, 1500 };
                 input_size = 320;
+                is_tiny = true;
                 break;
 
             case R.id.select_all:
@@ -393,7 +396,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     TF_OD_API_IS_QUANTIZED,
                     input_size,
                     output_shape,
-                    true);
+                    is_tiny);
 
         } catch (IOException e) {
             e.printStackTrace();

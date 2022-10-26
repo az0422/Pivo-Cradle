@@ -1,0 +1,463 @@
+ Prepare additional network for mAP calculation...
+net.optimized_memory = 0 
+mini_batch = 1, batch = 4, time_steps = 1, train = 0 
+Create CUDA-stream - 0 
+ Create cudnn-handle 0 
+nms_kind: greedynms (1), beta = 0.600000 
+nms_kind: greedynms (1), beta = 0.600000 
+nms_kind: greedynms (1), beta = 0.600000 
+yolo-big
+net.optimized_memory = 0 
+mini_batch = 16, batch = 64, time_steps = 1, train = 1 
+nms_kind: greedynms (1), beta = 0.600000 
+nms_kind: greedynms (1), beta = 0.600000 
+nms_kind: greedynms (1), beta = 0.600000 
+Learning Rate: 0.00261, Momentum: 0.9, Decay: 0.0005
+ Detection layer: 34 - type = 28 
+ Detection layer: 41 - type = 28 
+ Detection layer: 47 - type = 28 
+ If error occurs - run training with flag: -dont_show 
+Loaded: 0.457662 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;1/10000: loss=1264.1 hours left=-1.0
+ 1: 1264.063843, 1264.063843 avg loss, 0.000000 rate, 1.311242 seconds, 64 images, -1.000000 hours left
+Loaded: 0.000054 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;2/10000: loss=1249.7 hours left=4.9
+ 2: 1249.666504, 1262.624146 avg loss, 0.000000 rate, 0.935388 seconds, 128 images, 4.918383 hours left
+Loaded: 0.000060 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;3/10000: loss=1268.4 hours left=4.9
+ 3: 1268.419312, 1263.203613 avg loss, 0.000000 rate, 0.941610 seconds, 192 images, 4.895185 hours left
+Loaded: 0.000054 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;4/10000: loss=1259.8 hours left=4.9
+ 4: 1259.820068, 1262.865234 avg loss, 0.000000 rate, 0.942243 seconds, 256 images, 4.872390 hours left
+Loaded: 0.000057 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;5/10000: loss=1253.8 hours left=4.8
+ 5: 1253.833252, 1261.962036 avg loss, 0.000000 rate, 0.940112 seconds, 320 images, 4.849838 hours left
+Loaded: 0.000052 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;6/10000: loss=1252.8 hours left=4.8
+ 6: 1252.766479, 1261.042480 avg loss, 0.000000 rate, 0.947621 seconds, 384 images, 4.827450 hours left
+Loaded: 0.000056 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;7/10000: loss=1250.1 hours left=4.8
+ 7: 1250.071411, 1259.945312 avg loss, 0.000000 rate, 0.944544 seconds, 448 images, 4.805491 hours left
+Loaded: 0.000050 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;8/10000: loss=1261.7 hours left=4.8
+ 8: 1261.731934, 1260.124023 avg loss, 0.000000 rate, 0.958758 seconds, 512 images, 4.783665 hours left
+Loaded: 0.000053 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;9/10000: loss=1255.9 hours left=4.8
+ 9: 1255.923340, 1259.703979 avg loss, 0.000000 rate, 0.948543 seconds, 576 images, 4.762448 hours left
+Loaded: 0.000055 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;10/10000: loss=1258.6 hours left=4.7
+ 10: 1258.579102, 1259.591553 avg loss, 0.000000 rate, 0.970439 seconds, 640 images, 4.741156 hours left
+Loaded: 0.000073 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;11/10000: loss=1258.7 hours left=4.7
+ 11: 1258.654053, 1259.497803 avg loss, 0.000000 rate, 0.962166 seconds, 704 images, 4.720682 hours left
+Loaded: 0.000056 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;12/10000: loss=1259.7 hours left=4.7
+ 12: 1259.727539, 1259.520752 avg loss, 0.000000 rate, 1.158489 seconds, 768 images, 4.700235 hours left
+Loaded: 0.000057 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;13/10000: loss=1264.8 hours left=4.7
+ 13: 1264.752808, 1260.043945 avg loss, 0.000000 rate, 0.966339 seconds, 832 images, 4.685384 hours left
+Loaded: 0.000057 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;14/10000: loss=1264.5 hours left=4.7
+ 14: 1264.548950, 1260.494385 avg loss, 0.000000 rate, 0.945629 seconds, 896 images, 4.665348 hours left
+Loaded: 0.000052 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;15/10000: loss=1253.9 hours left=4.6
+ 15: 1253.917847, 1259.836670 avg loss, 0.000000 rate, 0.941572 seconds, 960 images, 4.644934 hours left
+Loaded: 0.000042 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;16/10000: loss=1264.7 hours left=4.6
+ 16: 1264.651978, 1260.318237 avg loss, 0.000000 rate, 0.940939 seconds, 1024 images, 4.624609 hours left
+Loaded: 0.000053 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;17/10000: loss=1268.9 hours left=4.6
+ 17: 1268.942627, 1261.180664 avg loss, 0.000000 rate, 0.945598 seconds, 1088 images, 4.604468 hours left
+Loaded: 0.000042 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;18/10000: loss=1265.2 hours left=4.6
+ 18: 1265.228516, 1261.585449 avg loss, 0.000000 rate, 0.939395 seconds, 1152 images, 4.584703 hours left
+Loaded: 0.000053 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;19/10000: loss=1259.2 hours left=4.6
+ 19: 1259.207275, 1261.347656 avg loss, 0.000000 rate, 0.948388 seconds, 1216 images, 4.564911 hours left
+Loaded: 0.000073 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;20/10000: loss=1264.3 hours left=4.5
+ 20: 1264.261475, 1261.639038 avg loss, 0.000000 rate, 0.947220 seconds, 1280 images, 4.545565 hours left
+Loaded: 0.000064 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;21/10000: loss=1256.0 hours left=4.5
+ 21: 1256.023804, 1261.077515 avg loss, 0.000000 rate, 0.937141 seconds, 1344 images, 4.526378 hours left
+Loaded: 0.000055 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;22/10000: loss=1262.2 hours left=4.5
+ 22: 1262.204224, 1261.190186 avg loss, 0.000000 rate, 0.948022 seconds, 1408 images, 4.507101 hours left
+Loaded: 0.000059 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;23/10000: loss=1265.5 hours left=4.5
+ 23: 1265.521484, 1261.623291 avg loss, 0.000000 rate, 0.939874 seconds, 1472 images, 4.488315 hours left
+Loaded: 0.000049 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;24/10000: loss=1260.7 hours left=4.5
+ 24: 1260.725830, 1261.533569 avg loss, 0.000000 rate, 0.948382 seconds, 1536 images, 4.469491 hours left
+Loaded: 0.000076 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;25/10000: loss=1255.6 hours left=4.5
+ 25: 1255.612915, 1260.941528 avg loss, 0.000000 rate, 0.943955 seconds, 1600 images, 4.451085 hours left
+Loaded: 0.000065 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;26/10000: loss=1266.2 hours left=4.4
+ 26: 1266.226074, 1261.469971 avg loss, 0.000000 rate, 0.940234 seconds, 1664 images, 4.432741 hours left
+Loaded: 0.000054 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;27/10000: loss=1261.2 hours left=4.4
+ 27: 1261.226074, 1261.445557 avg loss, 0.000000 rate, 0.954619 seconds, 1728 images, 4.414473 hours left
+Loaded: 0.000054 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;28/10000: loss=1263.9 hours left=4.4
+ 28: 1263.861450, 1261.687134 avg loss, 0.000000 rate, 1.184014 seconds, 1792 images, 4.396786 hours left
+Loaded: 0.000052 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;29/10000: loss=1257.2 hours left=4.4
+ 29: 1257.232300, 1261.241699 avg loss, 0.000000 rate, 0.945216 seconds, 1856 images, 4.385624 hours left
+Loaded: 0.000077 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;30/10000: loss=1256.8 hours left=4.4
+ 30: 1256.768921, 1260.794434 avg loss, 0.000000 rate, 0.947618 seconds, 1920 images, 4.367960 hours left
+Loaded: 0.000060 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;31/10000: loss=1254.5 hours left=4.4
+ 31: 1254.474976, 1260.162476 avg loss, 0.000000 rate, 0.945416 seconds, 1984 images, 4.350534 hours left
+Loaded: 0.000056 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;32/10000: loss=1246.3 hours left=4.3
+ 32: 1246.286743, 1258.774902 avg loss, 0.000000 rate, 0.944197 seconds, 2048 images, 4.333217 hours left
+Loaded: 0.000055 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;33/10000: loss=1254.2 hours left=4.3
+ 33: 1254.199219, 1258.317383 avg loss, 0.000000 rate, 0.943008 seconds, 2112 images, 4.316039 hours left
+Loaded: 0.000059 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;34/10000: loss=1245.2 hours left=4.3
+ 34: 1245.209961, 1257.006592 avg loss, 0.000000 rate, 0.946258 seconds, 2176 images, 4.298995 hours left
+Loaded: 0.000055 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;35/10000: loss=1246.0 hours left=4.3
+ 35: 1245.993408, 1255.905273 avg loss, 0.000000 rate, 0.943898 seconds, 2240 images, 4.282210 hours left
+Loaded: 0.000058 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;36/10000: loss=1247.5 hours left=4.3
+ 36: 1247.541992, 1255.068970 avg loss, 0.000000 rate, 0.954831 seconds, 2304 images, 4.265525 hours left
+Loaded: 0.000062 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;37/10000: loss=1248.5 hours left=4.2
+ 37: 1248.490845, 1254.411133 avg loss, 0.000000 rate, 0.955842 seconds, 2368 images, 4.249313 hours left
+Loaded: 0.000053 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;38/10000: loss=1245.8 hours left=4.2
+ 38: 1245.763184, 1253.546387 avg loss, 0.000000 rate, 0.956125 seconds, 2432 images, 4.233282 hours left
+Loaded: 0.000051 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;39/10000: loss=1245.5 hours left=4.2
+ 39: 1245.463867, 1252.738159 avg loss, 0.000000 rate, 0.948953 seconds, 2496 images, 4.217419 hours left
+Loaded: 0.000055 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;40/10000: loss=1244.9 hours left=4.2
+ 40: 1244.886475, 1251.953003 avg loss, 0.000000 rate, 0.942330 seconds, 2560 images, 4.201511 hours left
+Loaded: 0.000050 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;41/10000: loss=1246.5 hours left=4.2
+ 41: 1246.479492, 1251.405640 avg loss, 0.000000 rate, 0.941568 seconds, 2624 images, 4.185576 hours left
+Loaded: 0.000051 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;42/10000: loss=1238.1 hours left=4.2
+ 42: 1238.091431, 1250.074219 avg loss, 0.000000 rate, 0.944892 seconds, 2688 images, 4.169777 hours left
+Loaded: 0.000051 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;43/10000: loss=1240.4 hours left=4.2
+ 43: 1240.379395, 1249.104736 avg loss, 0.000000 rate, 1.094651 seconds, 2752 images, 4.154225 hours left
+Loaded: 0.000056 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;44/10000: loss=1235.6 hours left=4.1
+ 44: 1235.608765, 1247.755127 avg loss, 0.000000 rate, 1.073950 seconds, 2816 images, 4.142968 hours left
+Loaded: 0.000064 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;45/10000: loss=1236.2 hours left=4.1
+ 45: 1236.180420, 1246.597656 avg loss, 0.000000 rate, 0.961338 seconds, 2880 images, 4.131249 hours left
+Loaded: 0.000057 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;46/10000: loss=1234.0 hours left=4.1
+ 46: 1233.956665, 1245.333618 avg loss, 0.000000 rate, 0.956524 seconds, 2944 images, 4.116533 hours left
+Loaded: 0.000054 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;47/10000: loss=1225.8 hours left=4.1
+ 47: 1225.795898, 1243.379883 avg loss, 0.000000 rate, 0.949467 seconds, 3008 images, 4.101825 hours left
+Loaded: 0.000051 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;48/10000: loss=1220.0 hours left=4.1
+ 48: 1220.042725, 1241.046143 avg loss, 0.000000 rate, 0.943609 seconds, 3072 images, 4.087066 hours left
+Loaded: 0.000055 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;49/10000: loss=1216.4 hours left=4.1
+ 49: 1216.437256, 1238.585205 avg loss, 0.000000 rate, 0.948259 seconds, 3136 images, 4.072289 hours left
+Loaded: 0.000050 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;50/10000: loss=1218.1 hours left=4.1
+ 50: 1218.077637, 1236.534424 avg loss, 0.000000 rate, 0.952101 seconds, 3200 images, 4.057787 hours left
+Loaded: 0.000059 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;51/10000: loss=1204.1 hours left=4.0
+ 51: 1204.123779, 1233.293335 avg loss, 0.000000 rate, 0.950326 seconds, 3264 images, 4.043533 hours left
+Loaded: 0.000049 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;52/10000: loss=1210.3 hours left=4.0
+ 52: 1210.297607, 1230.993774 avg loss, 0.000000 rate, 0.952663 seconds, 3328 images, 4.029370 hours left
+Loaded: 0.000053 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;53/10000: loss=1205.4 hours left=4.0
+ 53: 1205.351685, 1228.429565 avg loss, 0.000000 rate, 0.950544 seconds, 3392 images, 4.015412 hours left
+Loaded: 0.000050 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;54/10000: loss=1194.2 hours left=4.0
+ 54: 1194.247314, 1225.011353 avg loss, 0.000000 rate, 0.945292 seconds, 3456 images, 4.001531 hours left
+Loaded: 0.000052 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;55/10000: loss=1183.3 hours left=4.0
+ 55: 1183.284424, 1220.838623 avg loss, 0.000000 rate, 0.946340 seconds, 3520 images, 3.987640 hours left
+Loaded: 0.000083 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;56/10000: loss=1168.2 hours left=4.0
+ 56: 1168.196167, 1215.574341 avg loss, 0.000000 rate, 0.944200 seconds, 3584 images, 3.973920 hours left
+Loaded: 0.000057 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;57/10000: loss=1166.9 hours left=4.0
+ 57: 1166.896484, 1210.706543 avg loss, 0.000000 rate, 0.946323 seconds, 3648 images, 3.960272 hours left
+Loaded: 0.000055 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;58/10000: loss=1155.5 hours left=3.9
+ 58: 1155.457520, 1205.181641 avg loss, 0.000000 rate, 0.952131 seconds, 3712 images, 3.946814 hours left
+Loaded: 0.000044 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;59/10000: loss=1149.8 hours left=3.9
+ 59: 1149.756470, 1199.639160 avg loss, 0.000000 rate, 1.221085 seconds, 3776 images, 3.933648 hours left
+Loaded: 0.000056 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;60/10000: loss=1142.8 hours left=3.9
+ 60: 1142.797852, 1193.955078 avg loss, 0.000000 rate, 0.945141 seconds, 3840 images, 3.928036 hours left
+Loaded: 0.000056 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;61/10000: loss=1132.0 hours left=3.9
+ 61: 1131.960815, 1187.755615 avg loss, 0.000000 rate, 0.946203 seconds, 3904 images, 3.914864 hours left
+Loaded: 0.000040 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;62/10000: loss=1122.7 hours left=3.9
+ 62: 1122.650024, 1181.245117 avg loss, 0.000000 rate, 0.945813 seconds, 3968 images, 3.901847 hours left
+Loaded: 0.000041 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;63/10000: loss=1112.1 hours left=3.9
+ 63: 1112.098022, 1174.330444 avg loss, 0.000000 rate, 0.947140 seconds, 4032 images, 3.888946 hours left
+Loaded: 0.000046 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;64/10000: loss=1096.2 hours left=3.9
+ 64: 1096.195190, 1166.516968 avg loss, 0.000000 rate, 0.946147 seconds, 4096 images, 3.876208 hours left
+Loaded: 0.000050 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;65/10000: loss=1088.5 hours left=3.9
+ 65: 1088.531616, 1158.718384 avg loss, 0.000000 rate, 0.946047 seconds, 4160 images, 3.863568 hours left
+Loaded: 0.000050 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;66/10000: loss=1069.7 hours left=3.9
+ 66: 1069.743286, 1149.820923 avg loss, 0.000000 rate, 0.945768 seconds, 4224 images, 3.851049 hours left
+Loaded: 0.000060 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;67/10000: loss=1054.9 hours left=3.8
+ 67: 1054.891113, 1140.328003 avg loss, 0.000000 rate, 0.952169 seconds, 4288 images, 3.838645 hours left
+Loaded: 0.000051 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;68/10000: loss=1040.7 hours left=3.8
+ 68: 1040.717773, 1130.366943 avg loss, 0.000000 rate, 0.945755 seconds, 4352 images, 3.826538 hours left
+Loaded: 0.000055 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;69/10000: loss=1019.5 hours left=3.8
+ 69: 1019.479614, 1119.278198 avg loss, 0.000000 rate, 0.950833 seconds, 4416 images, 3.814372 hours left
+Loaded: 0.000079 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;70/10000: loss=1004.2 hours left=3.8
+ 70: 1004.170532, 1107.767456 avg loss, 0.000000 rate, 0.947302 seconds, 4480 images, 3.802466 hours left
+Loaded: 0.000061 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;71/10000: loss=989.7 hours left=3.8
+ 71: 989.666199, 1095.957275 avg loss, 0.000000 rate, 0.953421 seconds, 4544 images, 3.790583 hours left
+Loaded: 0.000063 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;72/10000: loss=974.5 hours left=3.8
+ 72: 974.491150, 1083.810669 avg loss, 0.000000 rate, 0.945625 seconds, 4608 images, 3.778982 hours left
+Loaded: 0.000064 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;73/10000: loss=955.8 hours left=3.8
+ 73: 955.796692, 1071.009277 avg loss, 0.000000 rate, 0.976326 seconds, 4672 images, 3.767278 hours left
+Loaded: 0.000056 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;74/10000: loss=932.7 hours left=3.8
+ 74: 932.706238, 1057.178955 avg loss, 0.000000 rate, 0.969926 seconds, 4736 images, 3.756540 hours left
+Loaded: 0.000074 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;75/10000: loss=915.6 hours left=3.7
+ 75: 915.609436, 1043.021973 avg loss, 0.000000 rate, 0.973806 seconds, 4800 images, 3.745727 hours left
+Loaded: 0.000071 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;76/10000: loss=892.6 hours left=3.7
+ 76: 892.620544, 1027.981812 avg loss, 0.000000 rate, 1.501943 seconds, 4864 images, 3.735126 hours left
+Loaded: 0.000059 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;77/10000: loss=873.2 hours left=3.7
+ 77: 873.198486, 1012.503479 avg loss, 0.000000 rate, 1.216673 seconds, 4928 images, 3.739187 hours left
+Loaded: 0.000059 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;78/10000: loss=852.2 hours left=3.7
+ 78: 852.179993, 996.471130 avg loss, 0.000000 rate, 0.951650 seconds, 4992 images, 3.735338 hours left
+Loaded: 0.000051 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;79/10000: loss=828.8 hours left=3.7
+ 79: 828.755066, 979.699524 avg loss, 0.000000 rate, 0.922376 seconds, 5056 images, 3.724242 hours left
+Loaded: 0.000057 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;80/10000: loss=802.9 hours left=3.7
+ 80: 802.926758, 962.022217 avg loss, 0.000000 rate, 0.922464 seconds, 5120 images, 3.712426 hours left
+Loaded: 0.000055 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;81/10000: loss=779.2 hours left=3.7
+ 81: 779.197388, 943.739746 avg loss, 0.000000 rate, 0.926158 seconds, 5184 images, 3.700730 hours left
+Loaded: 0.000051 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;82/10000: loss=757.1 hours left=3.7
+ 82: 757.074219, 925.073181 avg loss, 0.000000 rate, 0.937511 seconds, 5248 images, 3.689249 hours left
+Loaded: 0.000068 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;83/10000: loss=730.5 hours left=3.7
+ 83: 730.480835, 905.613953 avg loss, 0.000000 rate, 1.151064 seconds, 5312 images, 3.678192 hours left
+Loaded: 0.000070 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;84/10000: loss=705.1 hours left=3.7
+ 84: 705.113464, 885.563904 avg loss, 0.000000 rate, 1.687355 seconds, 5376 images, 3.673130 hours left
+Loaded: 0.000044 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;85/10000: loss=678.8 hours left=3.7
+ 85: 678.829346, 864.890442 avg loss, 0.000000 rate, 1.341707 seconds, 5440 images, 3.682884 hours left
+Loaded: 0.000063 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;86/10000: loss=655.8 hours left=3.7
+ 86: 655.808350, 843.982239 avg loss, 0.000000 rate, 1.103235 seconds, 5504 images, 3.683016 hours left
+Loaded: 0.000045 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;87/10000: loss=634.1 hours left=3.7
+ 87: 634.057190, 822.989746 avg loss, 0.000000 rate, 0.967622 seconds, 5568 images, 3.676577 hours left
+Loaded: 0.000047 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;88/10000: loss=605.8 hours left=3.7
+ 88: 605.840271, 801.274780 avg loss, 0.000000 rate, 0.969340 seconds, 5632 images, 3.666466 hours left
+Loaded: 0.000056 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;89/10000: loss=581.2 hours left=3.7
+ 89: 581.174255, 779.264709 avg loss, 0.000000 rate, 0.959842 seconds, 5696 images, 3.656500 hours left
+Loaded: 0.000050 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;90/10000: loss=558.6 hours left=3.6
+ 90: 558.595215, 757.197754 avg loss, 0.000000 rate, 0.961005 seconds, 5760 images, 3.646368 hours left
+Loaded: 0.000045 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;91/10000: loss=534.0 hours left=3.6
+ 91: 534.031189, 734.881104 avg loss, 0.000000 rate, 0.954596 seconds, 5824 images, 3.636367 hours left
+Loaded: 0.000059 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;92/10000: loss=512.4 hours left=3.6
+ 92: 512.419312, 712.634949 avg loss, 0.000000 rate, 0.967718 seconds, 5888 images, 3.626288 hours left
+Loaded: 0.000053 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;93/10000: loss=487.6 hours left=3.6
+ 93: 487.587799, 690.130249 avg loss, 0.000000 rate, 0.963019 seconds, 5952 images, 3.616669 hours left
+Loaded: 0.000050 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;94/10000: loss=460.2 hours left=3.6
+ 94: 460.229980, 667.140198 avg loss, 0.000000 rate, 0.960674 seconds, 6016 images, 3.607015 hours left
+Loaded: 0.000060 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;95/10000: loss=437.5 hours left=3.6
+ 95: 437.454437, 644.171631 avg loss, 0.000000 rate, 0.953621 seconds, 6080 images, 3.597409 hours left
+Loaded: 0.000056 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;96/10000: loss=420.0 hours left=3.6
+ 96: 419.971863, 621.751648 avg loss, 0.000000 rate, 0.957589 seconds, 6144 images, 3.587682 hours left
+Loaded: 0.000055 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;97/10000: loss=397.6 hours left=3.6
+ 97: 397.568878, 599.333374 avg loss, 0.000000 rate, 0.957370 seconds, 6208 images, 3.578159 hours left
+Loaded: 0.000044 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;98/10000: loss=378.0 hours left=3.6
+ 98: 378.017029, 577.201721 avg loss, 0.000000 rate, 0.955292 seconds, 6272 images, 3.568722 hours left
+Loaded: 0.000051 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;99/10000: loss=354.5 hours left=3.6
+ 99: 354.480042, 554.929565 avg loss, 0.000000 rate, 0.961430 seconds, 6336 images, 3.559319 hours left
+Loaded: 0.000045 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;100/10000: loss=333.0 hours left=3.6
+ 100: 332.994568, 532.736084 avg loss, 0.000000 rate, 0.961132 seconds, 6400 images, 3.550177 hours left
+Loaded: 0.000047 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;101/10000: loss=311.2 hours left=3.5
+ 101: 311.167847, 510.579254 avg loss, 0.000000 rate, 0.846450 seconds, 6464 images, 3.541116 hours left
+Loaded: 0.000043 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;102/10000: loss=299.4 hours left=3.5
+ 102: 299.434662, 489.464783 avg loss, 0.000000 rate, 0.952816 seconds, 6528 images, 3.528987 hours left
+Loaded: 0.000047 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;103/10000: loss=283.5 hours left=3.5
+ 103: 283.462494, 468.864563 avg loss, 0.000000 rate, 0.961146 seconds, 6592 images, 3.519904 hours left
+Loaded: 0.000065 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;104/10000: loss=265.8 hours left=3.5
+ 104: 265.846680, 448.562775 avg loss, 0.000000 rate, 0.959478 seconds, 6656 images, 3.511138 hours left
+Loaded: 0.000054 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;105/10000: loss=254.3 hours left=3.5
+ 105: 254.293869, 429.135895 avg loss, 0.000000 rate, 0.968779 seconds, 6720 images, 3.502411 hours left
+Loaded: 0.000050 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;106/10000: loss=234.6 hours left=3.5
+ 106: 234.550125, 409.677307 avg loss, 0.000000 rate, 0.981160 seconds, 6784 images, 3.494024 hours left
+Loaded: 0.000067 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;107/10000: loss=222.2 hours left=3.5
+ 107: 222.160645, 390.925629 avg loss, 0.000000 rate, 0.986301 seconds, 6848 images, 3.486057 hours left
+Loaded: 0.000058 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;108/10000: loss=206.7 hours left=3.5
+ 108: 206.667572, 372.499817 avg loss, 0.000000 rate, 0.987391 seconds, 6912 images, 3.478314 hours left
+Loaded: 0.000067 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;109/10000: loss=194.9 hours left=3.5
+ 109: 194.949738, 354.744812 avg loss, 0.000000 rate, 0.964960 seconds, 6976 images, 3.470671 hours left
+Loaded: 0.000053 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;110/10000: loss=184.5 hours left=3.5
+ 110: 184.529739, 337.723297 avg loss, 0.000000 rate, 0.955607 seconds, 7040 images, 3.462484 hours left
+Loaded: 0.000055 seconds
+
+ (next mAP calculation at 2384 iterations) ]2;111/10000: loss=173.5 hours left=3.5
+ 111: 173.500610, 321.301025 avg loss, 0.000000 rate, 0.965748 seconds, 7104 images, 3.454120 hours left
