@@ -57,12 +57,12 @@ import app.pivo.android.basicsdkdemo.tracking.MultiBoxTracker;
 public class DetectorActivity extends CameraActivity implements OnImageAvailableListener, View.OnClickListener {
     private static final Logger LOGGER = new Logger();
 
-    private static int TF_OD_API_INPUT_SIZE = 416;
+    private static int TF_OD_API_INPUT_SIZE = 480;
     private static float CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
-    private static int[] TF_OD_API_OUTPUT_SHAPE = { 2535, 2535 };
+    private static int[] TF_OD_API_OUTPUT_SHAPE = { 3375, 3375 };
     private static final boolean TF_OD_API_IS_QUANTIZED = false;
     private static boolean is_tiny = false;
-    private static final String TF_OD_API_MODEL_FILE = "yolo-big-416.tflite";
+    private static final String TF_OD_API_MODEL_FILE = "yolo-big-480.tflite";
 
     private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/obj.names";
 
@@ -340,8 +340,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             case R.id.model_performance:
                 model_name = "performance";
                 modelSelect = TF_OD_API_MODEL_FILE;
-                output_shape = new int[]{ 2535, 2535 };
-                input_size = 416;
+                output_shape = new int[]{ 3375, 3375 };
+                input_size = 480;
                 is_tiny = false;
                 break;
 

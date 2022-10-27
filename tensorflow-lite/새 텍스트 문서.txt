@@ -5,5 +5,5 @@ python save_model.py --weights ./weights/yolov4-tiny_last.weights --output ./che
 python convert_tflite.py --weights ./checkpoints/yolov4-tiny-608 --output ./checkpoints/yolov4-tiny-608.tflite
 
 
-python save_model.py --weights ./weights/yolo-big_best.weights --output ./checkpoints/yolo-big-416 --input_size 416 --model yolov4 --tiny --framework tflite --cfg ./weights/yolo-big.cfg
-python convert_tflite.py --weights ./checkpoints/yolo-big-416 --output ./checkpoints/yolo-big-416.tflite
+python save_model.py --weights ./weights/yolo-big_best.weights --output ./checkpoints/yolo-big-480 --input_size 480 --model yolov4 --tiny --framework tflite --cfg ./weights/yolo-big.cfg
+python convert_tflite.py --weights ./checkpoints/yolo-big-480 --output ./checkpoints/yolo-big-480.tflite

@@ -82,6 +82,7 @@ def YOLO(input_layer, NUM_CLASS, cfg, is_tiny = False, model = "yolov4"):
                 layers.append(input_layer)
             elif layer_name == "yolo":
                 out_layer = layers[-1]
+                print(layers)
                 out_layer_id_int = int(re.findall("conv2d_([0-9]*)", str(out_layer))[0])
             
                 out_layers.insert(0, out_layer)
