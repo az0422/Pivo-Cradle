@@ -33,6 +33,7 @@ def load_freeze_layer(layers_id, model='yolov4', tiny=False):
 def load_weights(model, weights_file, layers_id, model_name='yolov4', is_tiny=False):
     layer_size = layers_id[-1] + 1
     output_pos = layers_id
+    print(layers_id)
     
     '''
     if is_tiny:
@@ -59,6 +60,7 @@ def load_weights(model, weights_file, layers_id, model_name='yolov4', is_tiny=Fa
 
     j = 0
     for i in range(layer_size):
+        print(i)
         conv_layer_name = 'conv2d_%d' %i if i > 0 else 'conv2d'
         bn_layer_name = 'batch_normalization_%d' %j if j > 0 else 'batch_normalization'
 
