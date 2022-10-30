@@ -69,7 +69,7 @@ def YOLO(input_layer, NUM_CLASS, cfg, is_tiny = False, model = "yolov4"):
         anchors = []
     
         model_list = model_parse(cfg)
-        print(model_list)
+        print(str(model_list).replace("},", "},\n"))
     
         layer_name_dict = { "convolutional": 0, "route": 1, "maxpool": 2, "upsample": 3 }
         func_label = [layer_convolutional, layer_route, layer_maxpool, layer_upsample]
@@ -82,7 +82,7 @@ def YOLO(input_layer, NUM_CLASS, cfg, is_tiny = False, model = "yolov4"):
                 layers.append(input_layer)
             elif layer_name == "yolo":
                 out_layer = layers[-1]
-                print(layers)
+                print(str(layers).replace(">,", ">,\n"))
                 out_layer_id_int = int(re.findall("conv2d_([0-9]*)", str(out_layer))[0])
             
                 out_layers.insert(0, out_layer)

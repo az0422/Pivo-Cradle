@@ -59,6 +59,7 @@ def load_weights(model, weights_file, layers_id, model_name='yolov4', is_tiny=Fa
     major, minor, revision, seen, _ = np.fromfile(wf, dtype=np.int32, count=5)
 
     j = 0
+    print(layer_size)
     for i in range(layer_size):
         print(i)
         conv_layer_name = 'conv2d_%d' %i if i > 0 else 'conv2d'
