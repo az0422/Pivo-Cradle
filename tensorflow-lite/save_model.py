@@ -48,18 +48,18 @@ def save_tf():
       prob_tensors.append(output_tensors[1])
 
 
-#  elif FLAGS.model == "yolov7" and FLAGS.tiny:
-#    print(XYSCALE)
-#    for i, fm in enumerate(feature_maps):
-#      if i == 0:
-#        output_tensors = decode(fm, FLAGS.input_size // 32, NUM_CLASS, STRIDES, ANCHORS, i, XYSCALE, FLAGS.framework)
-#      elif i == 1:
-#        output_tensors = decode(fm, FLAGS.input_size // 16, NUM_CLASS, STRIDES, ANCHORS, i, XYSCALE, FLAGS.framework)
-#      else:
-#        output_tensors = decode(fm, FLAGS.input_size // 8, NUM_CLASS, STRIDES, ANCHORS, i, XYSCALE, FLAGS.framework)
-#        
-#      bbox_tensors.append(output_tensors[0])
-#      prob_tensors.append(output_tensors[1])
+  elif FLAGS.model == "yolov5" and FLAGS.tiny:
+    print(XYSCALE)
+    for i, fm in enumerate(feature_maps):
+      if i == 0:
+        output_tensors = decode(fm, FLAGS.input_size // 8, NUM_CLASS, STRIDES, ANCHORS, i, XYSCALE, FLAGS.framework)
+      elif i == 1:
+        output_tensors = decode(fm, FLAGS.input_size // 16, NUM_CLASS, STRIDES, ANCHORS, i, XYSCALE, FLAGS.framework)
+      else:
+        output_tensors = decode(fm, FLAGS.input_size // 32, NUM_CLASS, STRIDES, ANCHORS, i, XYSCALE, FLAGS.framework)
+        
+      bbox_tensors.append(output_tensors[0])
+      prob_tensors.append(output_tensors[1])
 
   else:
     for i, fm in enumerate(feature_maps):
