@@ -36,6 +36,7 @@ import app.pivo.android.basicsdkdemo.MainActivity;
 import app.pivo.android.basicsdkdemo.env.Logger;
 import app.pivo.android.basicsdkdemo.env.Utils;
 
+import org.tensorflow.lite.Tensor;
 import org.tensorflow.lite.gpu.GpuDelegate;
 import org.tensorflow.lite.nnapi.NnApiDelegate;
 
@@ -190,7 +191,7 @@ public class YoloV4Classifier implements Classifier {
     }
 
     public void setNumThreads(int num_threads) {
-        if (tfLite != null) tfLite.setNumThreads(num_threads);
+        //if (tfLite != null) tfLite.setNumThreads(num_threads);
     }
 
     @Override
@@ -390,25 +391,116 @@ public class YoloV4Classifier implements Classifier {
      * @return an array list containing the recognitions
      */
 
+//    private ArrayList<Recognition> getDetectionsForFull(ByteBuffer byteBuffer, Bitmap bitmap) {
+//        Map<Integer, Object> outputMap = new HashMap<>();
+//
+////        float[][][] outbuf = new float[1][output_box][labels.size() + 5];
+//        int input_size = INPUT_SIZE;
+//        int output_box = (int) ((Math.pow((input_size / 32), 2) + Math.pow((input_size / 16), 2) + Math.pow((input_size / 8), 2)) * 3);
+//        int numClass = labels.size();
+//
+//        Tensor oupten = tfLite.getOutputTensor(0);
+//        float oup_scale = oupten.quantizationParams().getScale();
+//        int oup_zero_point = oupten.quantizationParams().getZeroPoint();
+//
+//        ByteBuffer outData = ByteBuffer.allocateDirect(output_box * (numClass + 5) * (isModelQuantized ? 1 : 4));
+//        outData.order(ByteOrder.nativeOrder());
+//
+//        outData.rewind();
+//        outputMap.put(0, outData);
+//        Log.d("YoloV5Classifier", "mObjThresh: " + getObjThresh());
+//        Log.i("shape", "" + imgData);
+//        Object[] inputArray = {byteBuffer};
+//        tfLite.runForMultipleInputsOutputs(inputArray, outputMap);
+//
+//        byteBuffer.rewind();
+//
+//        ArrayList<Recognition> detections = new ArrayList<Recognition>();
+//
+//        float[][][] out = new float[1][output_box][numClass + 5];
+//        Log.d("YoloV5Classifier", "out[0] detect start");
+//        for (int i = 0; i < output_box; ++i) {
+//            for (int j = 0; j < numClass + 5; ++j) {
+//                if (isModelQuantized){
+//                    out[0][i][j] = oup_scale * (((int) byteBuffer.get() & 0xFF) - oup_zero_point);
+//                }
+//                else {
+//                    out[0][i][j] = byteBuffer.getFloat();
+//                }
+//            }
+//            // Denormalize xywh
+//            for (int j = 0; j < 4; ++j) {
+//                out[0][i][j] *= INPUT_SIZE;
+//            }
+//        }
+//        for (int i = 0; i < output_box; ++i){
+//            final int offset = 0;
+//            final float confidence = out[0][i][4];
+//            int detectedClass = -1;
+//            float maxClass = 0;
+//
+//            final float[] classes = new float[labels.size()];
+//            for (int c = 0; c < labels.size(); ++c) {
+//                classes[c] = out[0][i][5 + c];
+//            }
+//
+//            for (int c = 0; c < labels.size(); ++c) {
+//                if (classes[c] > maxClass) {
+//                    detectedClass = c;
+//                    maxClass = classes[c];
+//                }
+//            }
+//
+//            final float confidenceInClass = maxClass * confidence;
+//            if (confidenceInClass > getObjThresh()) {
+//                final float xPos = out[0][i][0];
+//                final float yPos = out[0][i][1];
+//
+//                final float w = out[0][i][2];
+//                final float h = out[0][i][3];
+//                Log.d("YoloV5Classifier",
+//                        Float.toString(xPos) + ',' + yPos + ',' + w + ',' + h);
+//
+//                final RectF rect =
+//                        new RectF(
+//                                Math.max(0, xPos - w / 2),
+//                                Math.max(0, yPos - h / 2),
+//                                Math.min(bitmap.getWidth() - 1, xPos + w / 2),
+//                                Math.min(bitmap.getHeight() - 1, yPos + h / 2));
+//                detections.add(new Recognition("" + offset, labels.get(detectedClass),
+//                        confidenceInClass, rect, detectedClass));
+//            }
+//        }
+//
+//        Log.d("YoloV5Classifier", "detect end");
+//        final ArrayList<Recognition> recognitions = nms(detections);
+////        final ArrayList<Recognition> recognitions = detections;
+//        return recognitions;
+//    }
+
+    private int shape_value = 3;
+
     private ArrayList<Recognition> getDetectionsForFull(ByteBuffer byteBuffer, Bitmap bitmap) {
         ArrayList<Recognition> detections = new ArrayList<Recognition>();
         Map<Integer, Object> outputMap = new HashMap<>();
-        outputMap.put(0, new float[1][OUTPUT_WIDTH_FULL[0]][8]);
-        outputMap.put(1, new float[1][OUTPUT_WIDTH_FULL[1]][3]);
+        outputMap.put(0, new float[1][OUTPUT_WIDTH_FULL[0]][labels.size() + 5]);
+        //outputMap.put(1, new float[1][OUTPUT_WIDTH_TINY[1]][labels.size()]);
         Object[] inputArray = {byteBuffer};
-        tfLite.run(byteBuffer, outputMap);
+        tfLite.runForMultipleInputsOutputs(inputArray, outputMap);
 
         int gridWidth = OUTPUT_WIDTH_FULL[0];
-        float[][][] bboxes = (float[][][])outputMap.get(0);
-        float[][][] out_score = (float[][][]) outputMap.get(1);
+        float[][][] bboxes = (float [][][]) outputMap.get(0);
+        //float[][][] out_score = (float[][][]) outputMap.get(1);
 
-        for (int i = 0; i < gridWidth;i++){
+        for (int i = 0; i < gridWidth; i++){
             float maxClass = 0;
             int detectedClass = -1;
             final float[] classes = new float[labels.size()];
+
             for (int c = 0;c< labels.size();c++){
-                classes [c] = out_score[0][i][c];
+                classes [c] = bboxes[0][i][5 + c];
             }
+
             for (int c = 0;c<labels.size();++c){
                 if (classes[c] > maxClass){
                     detectedClass = c;
@@ -416,7 +508,7 @@ public class YoloV4Classifier implements Classifier {
                 }
             }
             final float score = maxClass;
-            if (score > 0.5){
+            if (score > getObjThresh()){
                 final float xPos = bboxes[0][i][0];
                 final float yPos = bboxes[0][i][1];
                 final float w = bboxes[0][i][2];
@@ -432,13 +524,11 @@ public class YoloV4Classifier implements Classifier {
         return detections;
     }
 
-    private int shape_value = 3;
-
     private ArrayList<Recognition> getDetectionsForTiny(ByteBuffer byteBuffer, Bitmap bitmap) {
         ArrayList<Recognition> detections = new ArrayList<Recognition>();
         Map<Integer, Object> outputMap = new HashMap<>();
         outputMap.put(0, new float[1][OUTPUT_WIDTH_TINY[0]][4]);
-        outputMap.put(1, new float[1][OUTPUT_WIDTH_TINY[1]][3]);
+        outputMap.put(1, new float[1][OUTPUT_WIDTH_TINY[1]][labels.size()]);
         Object[] inputArray = {byteBuffer};
         tfLite.runForMultipleInputsOutputs(inputArray, outputMap);
 

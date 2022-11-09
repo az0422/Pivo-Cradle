@@ -176,7 +176,7 @@ public class YoloV5Classifier implements Classifier {
     }
 
     public void setNumThreads(int num_threads) {
-        if (tfLite != null) tfLite.setNumThreads(num_threads);
+        //if (tfLite != null) tfLite.setNumThreads(num_threads);
     }
 
     @Override
