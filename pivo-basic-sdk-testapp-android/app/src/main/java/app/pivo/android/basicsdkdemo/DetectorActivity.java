@@ -48,6 +48,7 @@ import app.pivo.android.basicsdkdemo.env.ImageUtils;
 import app.pivo.android.basicsdkdemo.env.Logger;
 import app.pivo.android.basicsdkdemo.tflite.Classifier;
 import app.pivo.android.basicsdkdemo.tflite.YoloV4Classifier;
+import app.pivo.android.basicsdkdemo.tflite.YoloV5Classifier;
 import app.pivo.android.basicsdkdemo.tracking.MultiBoxTracker;
 
 /**
@@ -60,14 +61,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static int TF_OD_API_INPUT_SIZE = 640;
     private static float CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
     private static int[] TF_OD_API_OUTPUT_SHAPE = { 25200, 25200 };
-    private static final boolean TF_OD_API_IS_QUANTIZED = true;
+    private static final boolean TF_OD_API_IS_QUANTIZED = false;
     private static boolean is_tiny = false;
     private static final String TF_OD_API_MODEL_FILE = "yolov5s-fp16.tflite";
 
     private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/obj.names";
 
     private static final DetectorMode MODE = DetectorMode.TF_OD_API;
-    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.5f;
+    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.3f;
     private static final boolean MAINTAIN_ASPECT = false;
     private static final Size DESIRED_PREVIEW_SIZE = new Size(1920 , 1080);
     private static final boolean SAVE_PREVIEW_BITMAP = false;
@@ -76,6 +77,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private Integer sensorOrientation;
 
     private Classifier detector;
+    private Classifier detectorAcc, detectorFast;
 
     private long lastProcessingTimeMs;
     private Bitmap rgbFrameBitmap = null;
@@ -93,12 +95,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private BorderedText borderedText;
 
-    class Detector {
-        public Detector() {
-
-        }
-    }
-
     @Override
     public void onPreviewSizeChosen(final Size size, final int rotation) {
         final float textSizePx =
@@ -113,7 +109,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         try {
             detector =
-                    YoloV4Classifier.create(
+                    YoloV5Classifier.create(
                             getAssets(),
                             TF_OD_API_MODEL_FILE,
                             TF_OD_API_LABELS_FILE,
@@ -336,6 +332,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     public void onClick(View v) {
         super.onClick(v);
 
+        Classifier temp = detector;
+        Bitmap tempCropped = croppedBitmap;
+        Matrix tempFrame = frameToCropTransform;
+        Matrix tempCrop = cropToFrameTransform;
+
         switch(v.getId()) {
             case R.id.model_performance:
                 model_name = "performance";
@@ -343,6 +344,39 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 output_shape = new int[]{ 25200, 25200 };
                 input_size = 640;
                 is_tiny = false;
+
+                try {
+                    TF_OD_API_INPUT_SIZE = input_size;
+                    croppedBitmap = Bitmap.createBitmap(input_size, input_size, Config.ARGB_8888);
+
+                    frameToCropTransform =
+                            ImageUtils.getTransformationMatrix(
+                                    previewWidth, previewHeight,
+                                    input_size, input_size,
+                                    sensorOrientation, MAINTAIN_ASPECT);
+
+                    cropToFrameTransform = new Matrix();
+                    frameToCropTransform.invert(cropToFrameTransform);
+
+                    CENTER_POSITION = input_size / 2;
+
+                    detector = YoloV5Classifier.create(
+                            getAssets(),
+                            modelSelect,
+                            TF_OD_API_LABELS_FILE,
+                            TF_OD_API_IS_QUANTIZED,
+                            input_size,
+                            output_shape,
+                            is_tiny);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    detector = temp;
+                    croppedBitmap = tempCropped;
+                    frameToCropTransform = tempFrame;
+                    cropToFrameTransform = tempCrop;
+                }
+
                 break;
 
             case R.id.model_speed:
@@ -351,6 +385,38 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 output_shape = new int[]{ 1500, 1500 };
                 input_size = 320;
                 is_tiny = true;
+
+                try {
+                    TF_OD_API_INPUT_SIZE = input_size;
+                    croppedBitmap = Bitmap.createBitmap(input_size, input_size, Config.ARGB_8888);
+
+                    frameToCropTransform =
+                            ImageUtils.getTransformationMatrix(
+                                    previewWidth, previewHeight,
+                                    input_size, input_size,
+                                    sensorOrientation, MAINTAIN_ASPECT);
+
+                    cropToFrameTransform = new Matrix();
+                    frameToCropTransform.invert(cropToFrameTransform);
+
+                    CENTER_POSITION = input_size / 2;
+
+                    detector = YoloV4Classifier.create(
+                            getAssets(),
+                            modelSelect,
+                            TF_OD_API_LABELS_FILE,
+                            TF_OD_API_IS_QUANTIZED,
+                            input_size,
+                            output_shape,
+                            is_tiny);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    detector = temp;
+                    croppedBitmap = tempCropped;
+                    frameToCropTransform = tempFrame;
+                    cropToFrameTransform = tempCrop;
+                }
                 break;
 
             case R.id.select_all:
@@ -368,42 +434,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             case R.id.select_cat:
                 selectedObject = "cat";
                 break;
-        }
-
-        Classifier temp = detector;
-        Bitmap tempCropped = croppedBitmap;
-        Matrix tempFrame = frameToCropTransform;
-        Matrix tempCrop = cropToFrameTransform;
-        try {
-            TF_OD_API_INPUT_SIZE = input_size;
-            croppedBitmap = Bitmap.createBitmap(input_size, input_size, Config.ARGB_8888);
-
-            frameToCropTransform =
-                    ImageUtils.getTransformationMatrix(
-                            previewWidth, previewHeight,
-                            input_size, input_size,
-                            sensorOrientation, MAINTAIN_ASPECT);
-
-            cropToFrameTransform = new Matrix();
-            frameToCropTransform.invert(cropToFrameTransform);
-
-            CENTER_POSITION = input_size / 2;
-
-            detector = YoloV4Classifier.create(
-                    getAssets(),
-                    modelSelect,
-                    TF_OD_API_LABELS_FILE,
-                    TF_OD_API_IS_QUANTIZED,
-                    input_size,
-                    output_shape,
-                    is_tiny);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            detector = temp;
-            croppedBitmap = tempCropped;
-            frameToCropTransform = tempFrame;
-            cropToFrameTransform = tempCrop;
         }
 
         ((TextView)findViewById(R.id.selected_object)).setText(selectedObject);
