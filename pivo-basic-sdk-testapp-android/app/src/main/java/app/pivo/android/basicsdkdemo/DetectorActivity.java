@@ -60,9 +60,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static int TF_OD_API_INPUT_SIZE = 640;
     private static float CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
     private static int[] TF_OD_API_OUTPUT_SHAPE = { 25200, 25200 };
-    private static final boolean TF_OD_API_IS_QUANTIZED = false;
-    private static boolean is_tiny = true;
-    private static final String TF_OD_API_MODEL_FILE = "yolov5s.tflite";
+    private static final boolean TF_OD_API_IS_QUANTIZED = true;
+    private static boolean is_tiny = false;
+    private static final String TF_OD_API_MODEL_FILE = "yolov5s-fp16.tflite";
 
     private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/obj.names";
 
@@ -215,7 +215,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                             temp = detector.recognizeImage(croppedBitmap);
                         //    previous = temp;
                         } catch (Exception e) {
-                          //temp = previous;
+                          e.printStackTrace();
                         }
                         List<Classifier.Recognition> results;
 
@@ -342,7 +342,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 modelSelect = TF_OD_API_MODEL_FILE;
                 output_shape = new int[]{ 25200, 25200 };
                 input_size = 640;
-                is_tiny = true;
+                is_tiny = false;
                 break;
 
             case R.id.model_speed:

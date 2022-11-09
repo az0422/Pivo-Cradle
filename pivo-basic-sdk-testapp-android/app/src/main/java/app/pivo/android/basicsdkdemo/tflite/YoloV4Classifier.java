@@ -377,6 +377,10 @@ public class YoloV4Classifier implements Classifier {
 //        return detections;
 //    }
 
+    private double sigmoid(float x) {
+        return 1.0 / (1.0 + Math.exp(-x));
+    }
+
     /**
      * For yolov4-tiny, the situation would be a little different from the yolov4, it only has two
      * output. Both has three dimenstion. The first one is a tensor with dimension [1, 2535,4], containing all the bounding boxes.
@@ -389,13 +393,13 @@ public class YoloV4Classifier implements Classifier {
     private ArrayList<Recognition> getDetectionsForFull(ByteBuffer byteBuffer, Bitmap bitmap) {
         ArrayList<Recognition> detections = new ArrayList<Recognition>();
         Map<Integer, Object> outputMap = new HashMap<>();
-        outputMap.put(0, new float[1][OUTPUT_WIDTH_FULL[0]][4]);
-        outputMap.put(1, new float[1][OUTPUT_WIDTH_FULL[1]][labels.size()]);
+        outputMap.put(0, new float[1][OUTPUT_WIDTH_FULL[0]][8]);
+        outputMap.put(1, new float[1][OUTPUT_WIDTH_FULL[1]][3]);
         Object[] inputArray = {byteBuffer};
-        tfLite.runForMultipleInputsOutputs(inputArray, outputMap);
+        tfLite.run(byteBuffer, outputMap);
 
         int gridWidth = OUTPUT_WIDTH_FULL[0];
-        float[][][] bboxes = (float [][][]) outputMap.get(0);
+        float[][][] bboxes = (float[][][])outputMap.get(0);
         float[][][] out_score = (float[][][]) outputMap.get(1);
 
         for (int i = 0; i < gridWidth;i++){
@@ -412,7 +416,7 @@ public class YoloV4Classifier implements Classifier {
                 }
             }
             final float score = maxClass;
-            if (score > getObjThresh()){
+            if (score > 0.5){
                 final float xPos = bboxes[0][i][0];
                 final float yPos = bboxes[0][i][1];
                 final float w = bboxes[0][i][2];
@@ -434,7 +438,7 @@ public class YoloV4Classifier implements Classifier {
         ArrayList<Recognition> detections = new ArrayList<Recognition>();
         Map<Integer, Object> outputMap = new HashMap<>();
         outputMap.put(0, new float[1][OUTPUT_WIDTH_TINY[0]][4]);
-        outputMap.put(1, new float[1][OUTPUT_WIDTH_TINY[1]][labels.size()]);
+        outputMap.put(1, new float[1][OUTPUT_WIDTH_TINY[1]][3]);
         Object[] inputArray = {byteBuffer};
         tfLite.runForMultipleInputsOutputs(inputArray, outputMap);
 
@@ -442,13 +446,15 @@ public class YoloV4Classifier implements Classifier {
         float[][][] bboxes = (float [][][]) outputMap.get(0);
         float[][][] out_score = (float[][][]) outputMap.get(1);
 
-        for (int i = 0; i < gridWidth;i++){
+        for (int i = 0; i < gridWidth; i++){
             float maxClass = 0;
             int detectedClass = -1;
             final float[] classes = new float[labels.size()];
+
             for (int c = 0;c< labels.size();c++){
                 classes [c] = out_score[0][i][c];
             }
+
             for (int c = 0;c<labels.size();++c){
                 if (classes[c] > maxClass){
                     detectedClass = c;
