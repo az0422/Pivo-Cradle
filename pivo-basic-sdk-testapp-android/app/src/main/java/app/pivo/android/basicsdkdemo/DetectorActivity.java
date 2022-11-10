@@ -58,12 +58,12 @@ import app.pivo.android.basicsdkdemo.tracking.MultiBoxTracker;
 public class DetectorActivity extends CameraActivity implements OnImageAvailableListener, View.OnClickListener {
     private static final Logger LOGGER = new Logger();
 
-    private static int TF_OD_API_INPUT_SIZE = 640;
+    private static int TF_OD_API_INPUT_SIZE = 416;
     private static float CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
-    private static int[] TF_OD_API_OUTPUT_SHAPE = { 25200, 25200 };
+    private static int[] TF_OD_API_OUTPUT_SHAPE = { 2535, 2535 };
     private static final boolean TF_OD_API_IS_QUANTIZED = false;
-    private static boolean is_tiny = false;
-    private static final String TF_OD_API_MODEL_FILE = "yolov5s-fp16.tflite";
+    private static boolean is_tiny = true;
+    private static final String TF_OD_API_MODEL_FILE = "yolov4-tiny-416.tflite";
 
     private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/obj.names";
 
@@ -109,7 +109,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         try {
             detector =
-                    YoloV5Classifier.create(
+                    YoloV4Classifier.create(
                             getAssets(),
                             TF_OD_API_MODEL_FILE,
                             TF_OD_API_LABELS_FILE,
@@ -341,9 +341,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             case R.id.model_performance:
                 model_name = "performance";
                 modelSelect = TF_OD_API_MODEL_FILE;
-                output_shape = new int[]{ 25200, 25200 };
-                input_size = 640;
-                is_tiny = false;
+                output_shape = new int[]{ 2535, 2535 };
+                input_size = 416;
+                is_tiny = true;
 
                 try {
                     TF_OD_API_INPUT_SIZE = input_size;
@@ -360,7 +360,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                     CENTER_POSITION = input_size / 2;
 
-                    detector = YoloV5Classifier.create(
+                    detector = YoloV4Classifier.create(
                             getAssets(),
                             modelSelect,
                             TF_OD_API_LABELS_FILE,
