@@ -1,0 +1,14 @@
+[pivo 회전 관련코드]
+DetectorActivity.java 에서
+
+/*
+
+                        SORT, 어떤 기준으로 object를 tracking할지 이하구문에서 설정합니다 !!!!!
+
+                         */
+
+이후.
+
+
+[sort 파라미터 관련]
+MultiBoxTracker, DetectorActivity파일에서 상단 변수선언부에서 변경. 두 java파일에서 파라미터 값은 일치해야합니다.(pivo회전이 정확하게 이루어지려면 파라미터가 일치해야합니다.)
