@@ -1,0 +1,22 @@
+<component name="libraryTable">
+  <library name="Gradle: com.polidea.rxandroidble:rxandroidble:1.5.0@aar">
+    <ANNOTATIONS>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/5aa36afb61dc73c7f210df59fa149029/transformed/jetified-rxandroidble-1.5.0/annotations.zip!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/2323f0cfda929865df50f87f571bc33c/transformed/jetified-rxandroidble-1.5.0/annotations.zip!/" />
+    </ANNOTATIONS>
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/5aa36afb61dc73c7f210df59fa149029/transformed/jetified-rxandroidble-1.5.0/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/5aa36afb61dc73c7f210df59fa149029/transformed/jetified-rxandroidble-1.5.0/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/5aa36afb61dc73c7f210df59fa149029/transformed/jetified-rxandroidble-1.5.0/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/2323f0cfda929865df50f87f571bc33c/transformed/jetified-rxandroidble-1.5.0/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/2323f0cfda929865df50f87f571bc33c/transformed/jetified-rxandroidble-1.5.0/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/2323f0cfda929865df50f87f571bc33c/transformed/jetified-rxandroidble-1.5.0/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.polidea.rxandroidble/rxandroidble/1.5.0/1ee8ff9d35c531a6a36e490ad53f3f870a321629/rxandroidble-1.5.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.polidea.rxandroidble/rxandroidble/1.5.0/4b7928176358f1f53d01fabb4d828b4f30f62d59/rxandroidble-1.5.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

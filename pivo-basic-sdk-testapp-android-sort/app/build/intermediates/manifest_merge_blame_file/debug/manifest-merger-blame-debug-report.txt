@@ -1,0 +1,97 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="app.pivo.android.basicsdkdemo"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="21"
+8-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml
+9        android:targetSdkVersion="29" />
+9-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml
+10
+11    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+11-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:5:5-79
+11-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:5:22-76
+12    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+12-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:6:5-81
+12-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:6:22-78
+13    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+13-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:7:5-85
+13-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:7:22-82
+14    <uses-permission android:name="android.permission.BLUETOOTH" />
+14-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:8:5-68
+14-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:8:22-65
+15    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+15-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:9:5-74
+15-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:9:22-71
+16    <uses-permission android:name="android.permission.CAMERA" />
+16-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:11:5-65
+16-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:11:22-62
+17
+18    <uses-feature android:name="android.hardware.camera" />
+18-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:13:5-60
+18-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:13:19-57
+19    <uses-feature android:name="android.hardware.camera.autofocus" />
+19-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:14:5-70
+19-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:14:19-67
+20
+21    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+21-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:15:5-80
+21-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:15:22-78
+22    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+22-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:16:5-79
+22-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:16:22-77
+23
+24    <uses-permission-sdk-23 android:name="android.permission.ACCESS_COARSE_LOCATION" />
+24-->[com.polidea.rxandroidble:rxandroidble:1.5.0] C:\Users\minsu\.gradle\caches\transforms-3\2323f0cfda929865df50f87f571bc33c\transformed\jetified-rxandroidble-1.5.0\AndroidManifest.xml:14:5-88
+24-->[com.polidea.rxandroidble:rxandroidble:1.5.0] C:\Users\minsu\.gradle\caches\transforms-3\2323f0cfda929865df50f87f571bc33c\transformed\jetified-rxandroidble-1.5.0\AndroidManifest.xml:14:29-85
+25
+26    <application
+26-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:18:5-37:19
+27        android:name="app.pivo.android.basicsdkdemo.App"
+27-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:19:9-57
+28        android:allowBackup="true"
+28-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:20:9-35
+29        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+29-->[androidx.core:core:1.3.0] C:\Users\minsu\.gradle\caches\transforms-3\0e9dce429be68a15669a99f386828204\transformed\core-1.3.0\AndroidManifest.xml:24:18-86
+30        android:debuggable="true"
+31        android:icon="@mipmap/ic_launcher"
+31-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:21:9-43
+32        android:label="@string/app_name"
+32-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:22:9-41
+33        android:roundIcon="@mipmap/ic_launcher_round"
+33-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:23:9-54
+34        android:supportsRtl="true"
+34-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:24:9-35
+35        android:theme="@style/AppTheme" >
+35-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:25:9-40
+36        <activity android:name="app.pivo.android.basicsdkdemo.PivoControllerActivity" />
+36-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:27:9-89
+36-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:27:19-86
+37        <activity android:name="app.pivo.android.basicsdkdemo.DetectorActivity" />
+37-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:28:9-54
+37-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:28:19-51
+38        <activity android:name="app.pivo.android.basicsdkdemo.PivoScanningActivity" >
+38-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:30:9-36:20
+38-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:30:19-84
+39            <intent-filter>
+39-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:31:13-35:29
+40                <action android:name="android.intent.action.MAIN" />
+40-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:32:17-69
+40-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:32:25-66
+41
+42                <category android:name="android.intent.category.LAUNCHER" />
+42-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:34:17-77
+42-->C:\Users\minsu\Desktop\pivo-basic-sdk-testapp-android\app\src\main\AndroidManifest.xml:34:27-74
+43            </intent-filter>
+44        </activity>
+45        <activity
+45-->[com.nabinbhandari.android:permissions:3.8] C:\Users\minsu\.gradle\caches\transforms-3\ccc9ebbe9adaac5130446549ac6895f3\transformed\jetified-permissions-3.8\AndroidManifest.xml:12:9-14:67
+46            android:name="com.nabinbhandari.android.permissions.PermissionsActivity"
+46-->[com.nabinbhandari.android:permissions:3.8] C:\Users\minsu\.gradle\caches\transforms-3\ccc9ebbe9adaac5130446549ac6895f3\transformed\jetified-permissions-3.8\AndroidManifest.xml:13:13-85
+47            android:theme="@style/Permissions.TransparentTheme" />
+47-->[com.nabinbhandari.android:permissions:3.8] C:\Users\minsu\.gradle\caches\transforms-3\ccc9ebbe9adaac5130446549ac6895f3\transformed\jetified-permissions-3.8\AndroidManifest.xml:14:13-64
+48    </application>
+49
+50</manifest>
