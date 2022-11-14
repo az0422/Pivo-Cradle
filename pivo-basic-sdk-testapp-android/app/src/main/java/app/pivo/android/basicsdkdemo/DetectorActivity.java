@@ -48,7 +48,6 @@ import app.pivo.android.basicsdkdemo.env.ImageUtils;
 import app.pivo.android.basicsdkdemo.env.Logger;
 import app.pivo.android.basicsdkdemo.tflite.Classifier;
 import app.pivo.android.basicsdkdemo.tflite.YoloV4Classifier;
-import app.pivo.android.basicsdkdemo.tflite.YoloV5Classifier;
 import app.pivo.android.basicsdkdemo.tflite.YoloClassifier;
 import app.pivo.android.basicsdkdemo.tracking.MultiBoxTracker;
 
@@ -66,7 +65,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static boolean is_tiny = false;
     private static final String TF_OD_API_MODEL_FILE = "yolov5s-fp16.tflite";
 
-    private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/obj.names";
+    private static final String TF_OD_API_LABELS_FILE = "obj.names";
 
     private static final DetectorMode MODE = DetectorMode.TF_OD_API;
     private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.3f;
@@ -110,14 +109,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         try {
             detector =
-                    YoloClassifier(
+                    new YoloClassifier(
                             getAssets(),
                             TF_OD_API_MODEL_FILE,
                             TF_OD_API_LABELS_FILE,
                             TF_OD_API_IS_QUANTIZED,
                             TF_OD_API_INPUT_SIZE,
                             TF_OD_API_OUTPUT_SHAPE,
-                            is_tiny);
+                            5);
             cropSize = TF_OD_API_INPUT_SIZE;
         } catch (final IOException e) {
             e.printStackTrace();
@@ -342,8 +341,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             case R.id.model_performance:
                 model_name = "performance";
                 modelSelect = TF_OD_API_MODEL_FILE;
-                output_shape = new int[]{ 2535, 2535 };
-                input_size = 416;
+                output_shape = new int[]{ 25200, 25200 };
+                input_size = 640;
                 is_tiny = true;
 
                 try {
@@ -361,14 +360,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                     CENTER_POSITION = input_size / 2;
 
-                    detector = YoloV4Classifier.create(
+                    detector = new YoloClassifier(
                             getAssets(),
                             modelSelect,
                             TF_OD_API_LABELS_FILE,
                             TF_OD_API_IS_QUANTIZED,
                             input_size,
                             output_shape,
-                            is_tiny);
+                            5);
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -402,14 +401,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                     CENTER_POSITION = input_size / 2;
 
-                    detector = YoloV4Classifier.create(
+                    detector = new YoloClassifier(
                             getAssets(),
                             modelSelect,
                             TF_OD_API_LABELS_FILE,
                             TF_OD_API_IS_QUANTIZED,
                             input_size,
                             output_shape,
-                            is_tiny);
+                            4);
 
                 } catch (IOException e) {
                     e.printStackTrace();
