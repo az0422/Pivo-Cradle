@@ -27,12 +27,9 @@ import android.graphics.RectF;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.util.TypedValue;
-
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-
 import app.pivo.android.basicsdkdemo.env.BorderedText;
 import app.pivo.android.basicsdkdemo.env.ImageUtils;
 import app.pivo.android.basicsdkdemo.env.Logger;
@@ -59,16 +56,6 @@ public class MultiBoxTracker {
     Color.parseColor("#AA33AA"),
     Color.parseColor("#0D0068")
   };
-  app.pivo.android.basicsdkdemo.tracking.Matrix sensorNoise = app.pivo.android.basicsdkdemo.tracking.Matrix.identity(2,2);
-  app.pivo.android.basicsdkdemo.tracking.Matrix processNoise = app.pivo.android.basicsdkdemo.tracking.Matrix.identity(4,4);
-  Function f = (Function) null;//by specifying null, you will use default function
-  double minimumIOU = 0.65;  // SORT, 얼마나 IOU해야 같은 id로 볼것인지 지정.
-  double newShapeWeight = 0.1;
-  double threshold = 8; // SORT, 몇프레임까지 정보를 유지할지.
-  double frame = 0;
-  app.pivo.android.basicsdkdemo.tracking.Matrix initialVelocity = app.pivo.android.basicsdkdemo.tracking.Matrix.zero(2,1);
-  app.pivo.android.basicsdkdemo.tracking.Matrix initialCovariance = app.pivo.android.basicsdkdemo.tracking.Matrix.identity(4,4);
-  Sort s = new Sort(sensorNoise,processNoise,f,minimumIOU,newShapeWeight,threshold,initialVelocity,initialCovariance);
   final List<Pair<Float, RectF>> screenRects = new LinkedList<Pair<Float, RectF>>();
   private final Logger logger = new Logger();
   private final Queue<Integer> availableColors = new LinkedList<Integer>();
@@ -126,7 +113,7 @@ public class MultiBoxTracker {
 
   public synchronized void trackResults(final List<Recognition> results, final long timestamp) {
     logger.i("Processing %d results from %d", results.size(), timestamp);
-    processResults(results, timestamp);
+    processResults(results);
   }
 
   private Matrix getFrameToCanvasMatrix() {
@@ -167,10 +154,7 @@ public class MultiBoxTracker {
     }
   }
 
-  private void processResults(final List<Recognition> results, final long timestamp) {
-
-
-
+  private void processResults(final List<Recognition> results) {
     final List<Pair<Float, Recognition>> rectsToTrack = new LinkedList<Pair<Float, Recognition>>();
 
     screenRects.clear();
@@ -198,67 +182,24 @@ public class MultiBoxTracker {
       rectsToTrack.add(new Pair<Float, Recognition>(result.getConfidence(), result));
     }
 
-
-
     trackedObjects.clear();
     if (rectsToTrack.isEmpty()) {
       logger.v("Nothing to track, aborting.");
       return;
     }
 
-    ArrayList<Measurement> arr_dum = new ArrayList<Measurement>();
-    for (final Pair<Float, Recognition> potential : rectsToTrack){
-      final Recognition recog = potential.second;
-      float x = recog.getLocation().left;
-      float y = recog.getLocation().top;
-      float width = recog.getLocation().width();
-      float height = recog.getLocation().height();
-      Measurement m = new Measurement(x,y,width,height,recog.getTitle(),0);
-      arr_dum.add(m);
-    }
-
-
-
-
-    Measurement[] tmp = new Measurement[arr_dum.size()];
-    for(int i=0; i<arr_dum.size(); i++){
-      tmp[i] = arr_dum.get(i);}
-    s.predictPhase(frame);
-    s.updatePhase(tmp,frame);
-    TrackedObject[] track_result = s.getTracked();
-    frame = frame + 1;
-    boolean dummy = false;
-
-    for (final TrackedObject potential : track_result) {
+    for (final Pair<Float, Recognition> potential : rectsToTrack) {
       final TrackedRecognition trackedRecognition = new TrackedRecognition();
-      for(final Pair<Float, Recognition> potential2 : rectsToTrack){
-        trackedRecognition.location = new RectF(potential2.second.getLocation());
-        trackedRecognition.detectionConfidence = potential2.second.getConfidence();
-        rectsToTrack.remove(0);
-        if (dummy == false){
-          break;
-        }
-      }
-
-
-      trackedRecognition.title = potential.objectType + " " + potential.name;
+      trackedRecognition.detectionConfidence = potential.first;
+      trackedRecognition.location = new RectF(potential.second.getLocation());
+      trackedRecognition.title = potential.second.getTitle();
       trackedRecognition.color = COLORS[trackedObjects.size()];
       trackedObjects.add(trackedRecognition);
-
-
-
 
       if (trackedObjects.size() >= COLORS.length) {
         break;
       }
     }
-
-
-
-
-
-
-
   }
 
   private static class TrackedRecognition {
