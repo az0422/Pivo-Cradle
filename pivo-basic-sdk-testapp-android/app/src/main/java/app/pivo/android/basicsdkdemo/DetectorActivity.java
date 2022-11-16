@@ -381,9 +381,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             case R.id.model_speed:
                 model_name = "speed";
-                modelSelect = "yolov4-tiny-320-lite.tflite";
-                output_shape = new int[]{ 1500, 1500 };
-                input_size = 320;
+                modelSelect = "yolov5n-fp16.tflite";
+                output_shape = new int[]{ 25200, 25200 };
+                input_size = 640;
                 is_tiny = true;
 
                 try {
@@ -408,7 +408,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                             TF_OD_API_IS_QUANTIZED,
                             input_size,
                             output_shape,
-                            4);
+                            5);
 
                 } catch (IOException e) {
                     e.printStackTrace();
