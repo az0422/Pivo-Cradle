@@ -47,7 +47,6 @@ import app.pivo.android.basicsdkdemo.env.BorderedText;
 import app.pivo.android.basicsdkdemo.env.ImageUtils;
 import app.pivo.android.basicsdkdemo.env.Logger;
 import app.pivo.android.basicsdkdemo.tflite.Classifier;
-import app.pivo.android.basicsdkdemo.tflite.YoloV4Classifier;
 import app.pivo.android.basicsdkdemo.tflite.YoloClassifier;
 import app.pivo.android.basicsdkdemo.tracking.MultiBoxTracker;
 
@@ -174,7 +173,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         findViewById(R.id.model_performance).setOnClickListener(this);
         findViewById(R.id.model_speed).setOnClickListener(this);
     }
-    private List<Classifier.Recognition> previous = new ArrayList<>();
+    private List<Classifier.Recognition> previous;
+
     @Override
     protected void processImage() {
         ++timestamp;
@@ -284,6 +284,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                         computingDetection = false;
 
+                        previous = results;
+
                         runOnUiThread(
                                 new Runnable() {
                                     @Override
@@ -382,8 +384,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             case R.id.model_speed:
                 model_name = "speed";
                 modelSelect = "yolov5n-fp16.tflite";
-                output_shape = new int[]{ 25200, 25200 };
-                input_size = 640;
+                output_shape = new int[]{ 10647, 10647 };
+                input_size = 416;
                 is_tiny = true;
 
                 try {

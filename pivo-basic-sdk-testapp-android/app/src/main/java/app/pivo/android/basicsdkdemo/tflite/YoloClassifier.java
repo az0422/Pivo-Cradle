@@ -160,7 +160,7 @@ public class YoloClassifier implements Classifier {
     protected static final int BATCH_SIZE = 1;
     protected static final int PIXEL_SIZE = 3;
 
-    protected ByteBuffer convertBitmapToByteBufferV4(Bitmap bitmap) {
+    protected ByteBuffer convertBitmapToByteBuffer(Bitmap bitmap) {
         ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4 * BATCH_SIZE * INPUT_SIZE * INPUT_SIZE * PIXEL_SIZE);
         byteBuffer.order(ByteOrder.nativeOrder());
         int[] intValues = new int[INPUT_SIZE * INPUT_SIZE];
@@ -174,25 +174,6 @@ public class YoloClassifier implements Classifier {
                 byteBuffer.putFloat((val & 0xFF) / 255.0f);
             }
         }
-        return byteBuffer;
-    }
-
-    protected ByteBuffer convertBitmapToByteBufferV5(Bitmap bitmap) {
-        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4 * BATCH_SIZE * INPUT_SIZE * INPUT_SIZE * PIXEL_SIZE);
-        byteBuffer.order(ByteOrder.nativeOrder());
-        int[] intValues = new int[INPUT_SIZE * INPUT_SIZE];
-        bitmap.getPixels(intValues, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
-        int pixel = 0;
-
-        for (int i = 0; i < INPUT_SIZE; ++i) {
-            for (int j = 0; j < INPUT_SIZE; ++j) {
-                int pixelValue = intValues[i * INPUT_SIZE + j];
-                byteBuffer.putFloat((((pixelValue >> 16) & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
-                byteBuffer.putFloat((((pixelValue >> 8) & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
-                byteBuffer.putFloat(((pixelValue & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
-            }
-        }
-
         return byteBuffer;
     }
 
@@ -305,11 +286,11 @@ public class YoloClassifier implements Classifier {
     public List<Recognition> recognizeImage(Bitmap bitmap) {
 
         if (YOLO_VERSION == 4) {
-            ByteBuffer byteBuffer = convertBitmapToByteBufferV4(bitmap);
+            ByteBuffer byteBuffer = convertBitmapToByteBuffer(bitmap);
             return recognizeImageV4(byteBuffer, bitmap);
         }
         else if (YOLO_VERSION == 5) {
-            ByteBuffer byteBuffer = convertBitmapToByteBufferV5(bitmap);
+            ByteBuffer byteBuffer = convertBitmapToByteBuffer(bitmap);
             return recognizeImageV5(byteBuffer, bitmap);
         }
 
