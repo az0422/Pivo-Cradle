@@ -24,6 +24,8 @@ import java.util.Vector;
 
 import app.pivo.android.basicsdkdemo.env.Utils;
 
+import org.tensorflow.lite.gpu.CompatibilityList;
+
 public class YoloClassifier implements Classifier {
     private int INPUT_SIZE;
     private int YOLO_VERSION;
@@ -65,6 +67,7 @@ public class YoloClassifier implements Classifier {
         try {
             Interpreter.Options options = new Interpreter.Options();
             options.setNumThreads(NUM_THREADS);
+
             GpuDelegate gpuDelegate = new GpuDelegate();
             options.addDelegate(gpuDelegate);
 
