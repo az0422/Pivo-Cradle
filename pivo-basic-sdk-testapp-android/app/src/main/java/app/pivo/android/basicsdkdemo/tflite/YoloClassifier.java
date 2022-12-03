@@ -37,9 +37,6 @@ public class YoloClassifier implements Classifier {
     private int CHANNELS = 4;
     private int[] intValues;
 
-    private final float IMAGE_MEAN = 0;
-    private final float IMAGE_STD = 255.0f;
-
     private int output_box;
 
     public YoloClassifier(final AssetManager assetManager,
