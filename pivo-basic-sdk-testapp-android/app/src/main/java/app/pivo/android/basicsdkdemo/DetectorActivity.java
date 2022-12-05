@@ -383,7 +383,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             case R.id.model_speed:
                 model_name = "speed";
-                modelSelect = "yolov5s.tflite";
+                modelSelect = "yolov7-lite.tflite";
                 output_shape = new int[]{ 10647, 10647 };
                 input_size = 416;
                 is_tiny = true;
