@@ -63,6 +63,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static int[] TF_OD_API_OUTPUT_SHAPE = { 25200, 25200 };
     private static final boolean TF_OD_API_IS_QUANTIZED = false;
     private static boolean is_tiny = false;
+    private static final String TF_OD_API_MODEL_FILE = "yolov7-tiny-fp16.tflite";
 
     private static final String TF_OD_API_LABELS_FILE = "obj.names";
 
