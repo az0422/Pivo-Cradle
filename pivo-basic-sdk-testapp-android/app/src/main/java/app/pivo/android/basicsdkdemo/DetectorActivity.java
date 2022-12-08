@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Vector;
 
 import app.pivo.android.basicsdk.PivoSdk;
 import app.pivo.android.basicsdkdemo.customview.OverlayView;
@@ -62,7 +63,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static int[] TF_OD_API_OUTPUT_SHAPE = { 25200, 25200 };
     private static final boolean TF_OD_API_IS_QUANTIZED = false;
     private static boolean is_tiny = false;
-    private static final String TF_OD_API_MODEL_FILE = "yolov5s-fp16.tflite";
 
     private static final String TF_OD_API_LABELS_FILE = "obj.names";
 
@@ -209,6 +209,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                         List<Classifier.Recognition> temp = new ArrayList<>();
                         try {
                             temp = detector.recognizeImage(croppedBitmap);
+
                         //    previous = temp;
                         } catch (Exception e) {
                           e.printStackTrace();
@@ -255,7 +256,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                         final Paint paint = new Paint();
                         paint.setColor(Color.RED);
                         paint.setStyle(Style.STROKE);
-                        paint.setStrokeWidth(2.0f);
+                        paint.setStrokeWidth(1.0f);
 
                         float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
                         switch (MODE) {

@@ -192,7 +192,7 @@ public class MultiBoxTracker {
       final TrackedRecognition trackedRecognition = new TrackedRecognition();
       trackedRecognition.detectionConfidence = potential.first;
       trackedRecognition.location = new RectF(potential.second.getLocation());
-      trackedRecognition.title = potential.second.getTitle();
+      trackedRecognition.title = potential.second.getId() +  " " + potential.second.getTitle();
       trackedRecognition.color = COLORS[trackedObjects.size()];
       trackedObjects.add(trackedRecognition);
 
@@ -209,3 +209,19 @@ public class MultiBoxTracker {
     String title;
   }
 }
+
+//for (final TrackedObject potential : track_result) {
+//final TrackedRecognition trackedRecognition = new TrackedRecognition();
+//        for(final Pair<Float, Recognition> potential2 : rectsToTrack){
+//        trackedRecognition.location = new RectF(potential2.second.getLocation());
+//        trackedRecognition.detectionConfidence = potential2.second.getConfidence();
+//        rectsToTrack.remove(0);
+//        if (dummy == false){
+//        break;
+//        }
+//        }
+//
+//
+//        trackedRecognition.title = potential.objectType + " " + potential.name;
+//        trackedRecognition.color = COLORS[trackedObjects.size()];
+//        trackedObjects.add(trackedRecognition);

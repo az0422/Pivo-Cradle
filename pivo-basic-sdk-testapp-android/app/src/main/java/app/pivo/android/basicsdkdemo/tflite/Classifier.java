@@ -46,7 +46,7 @@ public interface Classifier {
          * A unique identifier for what has been recognized. Specific to the class, not the instance of
          * the object.
          */
-        private final String id;
+        private String id;
 
         /**
          * Display name for the recognition.
@@ -108,6 +108,8 @@ public interface Classifier {
         public void setDetectedClass(int detectedClass) {
             this.detectedClass = detectedClass;
         }
+
+        public void setId(String id) { this.id = id; };
 
         @Override
         public String toString() {

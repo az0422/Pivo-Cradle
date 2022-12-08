@@ -42,13 +42,13 @@
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/0283f5c4969b031d0c5172a5abf36b9a/transformed/jetified-core-1.2.0-api.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/eb888ebe2a8b6e5dff407ccfb53c0209/transformed/material-1.1.0-api.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/8e57100c3746ced6f6d49304d89ac57d/transformed/jetified-basicsdk-1.0.6-api.jar</arg>
-                <arg>$USER_HOME$/.gradle/caches/transforms-3/08393a7e41022a8f736c65f2205bdb51/transformed/jetified-rxlifecycle-components-1.0-api.jar</arg>
+                <arg>$USER_HOME$/.gradle/caches/transforms-3/8a28024e261299e243d5cd251477eb4d/transformed/jetified-rxlifecycle-components-1.0-api.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/58095916d495ace93491ff5d6555ecf8/transformed/appcompat-1.1.0-api.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/458081f58a1e96654320cf8350a2eeed/transformed/jetified-core-ktx-1.2.0-api.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/8d6125cf45b1e3ca49b5fccef3a7468c/transformed/jetified-viewpager2-1.0.0-api.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/86dc69dcf25cc67d71293f86c2501a5b/transformed/recyclerview-1.1.0-api.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/34a0c3b74618536d562eadbaf89a1638/transformed/coordinatorlayout-1.1.0-api.jar</arg>
-                <arg>$USER_HOME$/.gradle/caches/transforms-3/b1ca3e6226ba8e2cf945c9d7067a3981/transformed/jetified-rxandroidble-1.5.0-api.jar</arg>
+                <arg>$USER_HOME$/.gradle/caches/transforms-3/f0a26e0dd4a9d36c4f87c233c678600e/transformed/jetified-rxandroidble-1.5.0-api.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/11ccc2ef39ffeddefcaa5e00cf696c91/transformed/jetified-camera-camera2-1.0.0-beta02-api.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/afe849bb5e0c18976f138554cabdb8f7/transformed/jetified-camera-core-1.0.0-beta02-api.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/6e321f87062c3ba8c455d5333114886b/transformed/monitor-1.2.0-api.jar</arg>
@@ -76,8 +76,8 @@
                 <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/androidx.arch.core/core-common/2.1.0/b3152fc64428c9354344bd89848ecddc09b6f07e/core-common-2.1.0.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/84e275857d3d22d1d856af17c049c65f/transformed/lifecycle-viewmodel-2.1.0-api.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/f51c550eec688ba0471aef610ec71835/transformed/interpolator-1.0.0-api.jar</arg>
-                <arg>$USER_HOME$/.gradle/caches/transforms-3/065097e79ce90177d7e41aba65bf3c79/transformed/jetified-rxlifecycle-android-1.0-api.jar</arg>
-                <arg>$USER_HOME$/.gradle/caches/transforms-3/0940d8f5c5eaee7c9b82ffeb2a74954f/transformed/jetified-rxbinding-0.4.0-api.jar</arg>
+                <arg>$USER_HOME$/.gradle/caches/transforms-3/749610cb54ac5abe19bda01466b7f36e/transformed/jetified-rxlifecycle-android-1.0-api.jar</arg>
+                <arg>$USER_HOME$/.gradle/caches/transforms-3/13d359904c2151363120a2e64877c016/transformed/jetified-rxbinding-0.4.0-api.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/androidx.annotation/annotation/1.1.0/e3a6fb2f40e3a3842e6b7472628ba4ce416ea4c8/annotation-1.1.0.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/01e93ad696ba942c4df861649c14ddc4/transformed/jetified-kxml2-2.3.0.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/249720b5b6ef9f85e4d24ddc48ee3c98/transformed/jetified-guava-28.1-android.jar</arg>
