@@ -1,10 +1,17 @@
 package app.pivo.android.basicsdkdemo.tflite;
 
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
 import android.util.Log;
 
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfFloat;
+import org.opencv.core.MatOfInt;
+import org.opencv.imgproc.Imgproc;
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.gpu.GpuDelegate;
 
@@ -23,6 +30,7 @@ import java.util.PriorityQueue;
 import java.util.Vector;
 
 import app.pivo.android.basicsdkdemo.env.Utils;
+import io.reactivex.MaybeTransformer;
 
 import org.tensorflow.lite.gpu.CompatibilityList;
 
@@ -282,7 +290,48 @@ public class YoloClassifier implements Classifier {
         return nms(detections);
     }
 
-    @Override
+    private Vector<Map<String, Mat>> savedDetectionsHistogram = new Vector<>();
+
+    Mat image;
+    Mat hist;
+
+    private List<Recognition> filter(Bitmap bitmap, List<Recognition> detections) {
+        List<Recognition> results = new ArrayList<>();
+
+        BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(context) {
+            @Override
+            public void onManagerConnected(int status) {
+                switch (status) {
+                    case LoaderCallbackInterface.SUCCESS:
+                    {
+                        Log.i("OpenCV", "OpenCV loaded successfully");
+                        image = new Mat();
+                        hist = new Mat();
+                    } break;
+                    default:
+                    {
+                        super.onManagerConnected(status);
+                    } break;
+                }
+            }
+        };
+
+//        org.opencv.android.Utils.bitmapToMat(bitmap, image);
+//        List<Mat> listMat = new ArrayList<>();
+//        listMat.add(image);
+//
+//        Imgproc.calcHist(listMat, new MatOfInt(0), null, hist, new MatOfInt(256), new MatOfFloat(0f, 255f));
+
+
+        return detections;
+    }
+
+    Context context;
+
+    public void setContext(Context context) {
+        this.context = context;
+    }
+
     public List<Recognition> recognizeImage(Bitmap bitmap) {
 
         if (YOLO_VERSION == 4) {
@@ -291,7 +340,7 @@ public class YoloClassifier implements Classifier {
         }
         else if (YOLO_VERSION == 5) {
             ByteBuffer byteBuffer = convertBitmapToByteBuffer(bitmap);
-            return recognizeImageV5(byteBuffer, bitmap);
+            return filter(bitmap, recognizeImageV5(byteBuffer, bitmap));
         }
 
         return null;

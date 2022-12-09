@@ -76,7 +76,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     OverlayView trackingOverlay;
     private Integer sensorOrientation;
 
-    private Classifier detector;
+    private YoloClassifier detector;
     private Classifier detectorAcc, detectorFast;
 
     private long lastProcessingTimeMs;
@@ -118,6 +118,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                             TF_OD_API_OUTPUT_SHAPE,
                             5);
             cropSize = TF_OD_API_INPUT_SIZE;
+
+            detector.setContext(this);
         } catch (final IOException e) {
             e.printStackTrace();
             LOGGER.e(e, "Exception initializing classifier!");
@@ -336,7 +338,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     public void onClick(View v) {
         super.onClick(v);
 
-        Classifier temp = detector;
+        YoloClassifier temp = detector;
         Bitmap tempCropped = croppedBitmap;
         Matrix tempFrame = frameToCropTransform;
         Matrix tempCrop = cropToFrameTransform;
@@ -372,6 +374,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                             input_size,
                             output_shape,
                             5);
+
+                    detector.setContext(this);
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -413,6 +417,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                             input_size,
                             output_shape,
                             5);
+
+                    detector.setContext(this);
 
                 } catch (IOException e) {
                     e.printStackTrace();

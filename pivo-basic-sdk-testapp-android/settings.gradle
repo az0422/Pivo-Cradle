@@ -1,2 +1,3 @@
 rootProject.name='PivoBasicSDKTestApp'
 include ':app'
+include ':opencv'
