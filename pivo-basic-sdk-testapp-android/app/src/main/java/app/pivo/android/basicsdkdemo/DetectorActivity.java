@@ -16,6 +16,8 @@
 
 package app.pivo.android.basicsdkdemo;
 
+import static org.opencv.android.Utils.bitmapToMat;
+
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
@@ -35,10 +37,22 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfFloat;
+import org.opencv.core.MatOfInt;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import app.pivo.android.basicsdk.PivoSdk;
@@ -94,6 +108,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private MultiBoxTracker tracker;
 
     private BorderedText borderedText;
+
+    private int maxSaveDetections = 10;
 
     @Override
     public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -212,7 +228,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                         List<Classifier.Recognition> temp = new ArrayList<>();
                         try {
                             temp = detector.recognizeImage(croppedBitmap);
-
+                            temp = filter(croppedBitmap, temp);
                         //    previous = temp;
                         } catch (Exception e) {
                           e.printStackTrace();
@@ -301,6 +317,111 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                                 });
                     }
                 });
+    }
+
+    private Vector<Map<String, Mat>> savedDetectionsHistogram = new Vector<>();
+    private int idSequence = 0;
+
+    BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS:
+                {
+                    Log.i("OpenCV", "OpenCV loaded successfully");
+
+                } break;
+                default:
+                {
+                    super.onManagerConnected(status);
+                } break;
+            }
+        }
+    };
+
+    private List<Classifier.Recognition> filter(Bitmap bitmap, List<Classifier.Recognition> detections) {
+        List<Classifier.Recognition> results = new ArrayList<>();
+        Map<String, Mat> histograms = new HashMap<>();
+
+        if (savedDetectionsHistogram.size() == 0) {
+            for (int i = 0; i < detections.size(); i++) {
+                detections.get(i).setId("" + idSequence++);
+
+                Mat image = new Mat();
+                Mat hist = new Mat();
+
+                bitmapToMat(bitmap, image);
+                List<Mat> listMat = new ArrayList<>();
+                listMat.add(image);
+
+                RectF roi_ = detections.get(i).getLocation();
+                Rect roi = new Rect((int) roi_.left, (int) roi_.top, (int) roi_.width(), (int) roi_.height());
+
+                Imgproc.rectangle(image, roi, new Scalar(0, 255, 0, 255), 1);
+                Imgproc.calcHist(listMat, new MatOfInt(0), new Mat(), hist, new MatOfInt(256), new MatOfFloat(0f, 255f));
+
+                histograms.put("" + i, hist);
+            }
+            savedDetectionsHistogram.add(histograms);
+        } else {
+            for (int i = 0; i < detections.size(); i++) {
+                Mat image = new Mat();
+                Mat hist = new Mat();
+
+                bitmapToMat(bitmap, image);
+                List<Mat> listMat = new ArrayList<>();
+                listMat.add(image);
+
+                RectF roi_ = detections.get(i).getLocation();
+                Rect roi = new Rect((int) roi_.left, (int) roi_.top, (int) roi_.width(), (int) roi_.height());
+
+                Imgproc.rectangle(image, roi, new Scalar(0, 255, 0, 255), 1);
+                Imgproc.calcHist(listMat, new MatOfInt(0), new Mat(), hist, new MatOfInt(32), new MatOfFloat(0f, 32f));
+
+                double maxSimular = 0f;
+
+                for (Map<String, Mat> prevHistogram : savedDetectionsHistogram) {
+                    String selectId = "";
+
+                    for (String key : prevHistogram.keySet()) {
+                        double val = Imgproc.compareHist(prevHistogram.get(key), hist, Imgproc.HISTCMP_CORREL);
+                        Log.i("compareHist", "" + val);
+
+                        if (val > 0f && val > maxSimular) {
+                            maxSimular = val;
+                            detections.get(i).setId(key);
+                            selectId = key;
+                        }
+                    }
+
+                    if ("".equals(selectId)) {
+                        selectId = "" + idSequence++;
+                        detections.get(i).setId(selectId);
+                    }
+                    histograms.put(selectId, hist);
+                }
+            }
+            if (savedDetectionsHistogram.size() > maxSaveDetections) {
+                savedDetectionsHistogram.remove(0);
+            }
+            savedDetectionsHistogram.add(histograms);
+        }
+
+//        Imgproc.calcHist(listMat, new MatOfInt(0), null, hist, new MatOfInt(256), new MatOfFloat(0f, 255f));
+
+        return detections;
+    }
+
+    public void onResume()
+    {
+        super.onResume();
+        if (!OpenCVLoader.initDebug()) {
+            Log.d("OpenCV", "Internal OpenCV library not found. Using OpenCV Manager for initialization");
+            OpenCVLoader.initAsync("4.6.0", this, mLoaderCallback);
+        } else {
+            Log.d("OpenCV", "OpenCV library found inside package. Using it!");
+            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
+        }
     }
 
     @Override

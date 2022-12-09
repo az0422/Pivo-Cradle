@@ -290,42 +290,6 @@ public class YoloClassifier implements Classifier {
         return nms(detections);
     }
 
-    private Vector<Map<String, Mat>> savedDetectionsHistogram = new Vector<>();
-
-    Mat image;
-    Mat hist;
-
-    private List<Recognition> filter(Bitmap bitmap, List<Recognition> detections) {
-        List<Recognition> results = new ArrayList<>();
-
-        BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(context) {
-            @Override
-            public void onManagerConnected(int status) {
-                switch (status) {
-                    case LoaderCallbackInterface.SUCCESS:
-                    {
-                        Log.i("OpenCV", "OpenCV loaded successfully");
-                        image = new Mat();
-                        hist = new Mat();
-                    } break;
-                    default:
-                    {
-                        super.onManagerConnected(status);
-                    } break;
-                }
-            }
-        };
-
-//        org.opencv.android.Utils.bitmapToMat(bitmap, image);
-//        List<Mat> listMat = new ArrayList<>();
-//        listMat.add(image);
-//
-//        Imgproc.calcHist(listMat, new MatOfInt(0), null, hist, new MatOfInt(256), new MatOfFloat(0f, 255f));
-
-
-        return detections;
-    }
-
     Context context;
 
     public void setContext(Context context) {
@@ -340,7 +304,7 @@ public class YoloClassifier implements Classifier {
         }
         else if (YOLO_VERSION == 5) {
             ByteBuffer byteBuffer = convertBitmapToByteBuffer(bitmap);
-            return filter(bitmap, recognizeImageV5(byteBuffer, bitmap));
+            return recognizeImageV5(byteBuffer, bitmap);
         }
 
         return null;
