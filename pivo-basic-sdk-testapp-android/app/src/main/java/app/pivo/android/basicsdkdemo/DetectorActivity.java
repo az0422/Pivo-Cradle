@@ -109,7 +109,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private BorderedText borderedText;
 
-    private int maxSaveDetections = 10;
+    private int maxSaveDetections = 100;
 
     @Override
     public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -339,79 +339,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         }
     };
 
-    private List<Classifier.Recognition> filter(Bitmap bitmap, List<Classifier.Recognition> detections) {
-        List<Classifier.Recognition> results = new ArrayList<>();
-        Map<String, Mat> histograms = new HashMap<>();
-
-        if (savedDetectionsHistogram.size() == 0) {
-            for (int i = 0; i < detections.size(); i++) {
-                detections.get(i).setId("" + idSequence++);
-
-                Mat image = new Mat();
-                Mat hist = new Mat();
-
-                bitmapToMat(bitmap, image);
-                List<Mat> listMat = new ArrayList<>();
-                listMat.add(image);
-
-                RectF roi_ = detections.get(i).getLocation();
-                Rect roi = new Rect((int) roi_.left, (int) roi_.top, (int) roi_.width(), (int) roi_.height());
-
-                Imgproc.rectangle(image, roi, new Scalar(0, 255, 0, 255), 1);
-                Imgproc.calcHist(listMat, new MatOfInt(0), new Mat(), hist, new MatOfInt(256), new MatOfFloat(0f, 255f));
-
-                histograms.put("" + i, hist);
-            }
-            savedDetectionsHistogram.add(histograms);
-        } else {
-            for (int i = 0; i < detections.size(); i++) {
-                Mat image = new Mat();
-                Mat hist = new Mat();
-
-                bitmapToMat(bitmap, image);
-                List<Mat> listMat = new ArrayList<>();
-                listMat.add(image);
-
-                RectF roi_ = detections.get(i).getLocation();
-                Rect roi = new Rect((int) roi_.left, (int) roi_.top, (int) roi_.width(), (int) roi_.height());
-
-                Imgproc.rectangle(image, roi, new Scalar(0, 255, 0, 255), 1);
-                Imgproc.calcHist(listMat, new MatOfInt(0), new Mat(), hist, new MatOfInt(32), new MatOfFloat(0f, 32f));
-
-                double maxSimular = 0f;
-
-                for (Map<String, Mat> prevHistogram : savedDetectionsHistogram) {
-                    String selectId = "";
-
-                    for (String key : prevHistogram.keySet()) {
-                        double val = Imgproc.compareHist(prevHistogram.get(key), hist, Imgproc.HISTCMP_CORREL);
-                        Log.i("compareHist", "" + val);
-
-                        if (val > 0f && val > maxSimular) {
-                            maxSimular = val;
-                            detections.get(i).setId(key);
-                            selectId = key;
-                        }
-                    }
-
-                    if ("".equals(selectId)) {
-                        selectId = "" + idSequence++;
-                        detections.get(i).setId(selectId);
-                    }
-                    histograms.put(selectId, hist);
-                }
-            }
-            if (savedDetectionsHistogram.size() > maxSaveDetections) {
-                savedDetectionsHistogram.remove(0);
-            }
-            savedDetectionsHistogram.add(histograms);
-        }
-
-//        Imgproc.calcHist(listMat, new MatOfInt(0), null, hist, new MatOfInt(256), new MatOfFloat(0f, 255f));
-
-        return detections;
-    }
-
     public void onResume()
     {
         super.onResume();
@@ -422,6 +349,76 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             Log.d("OpenCV", "OpenCV library found inside package. Using it!");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
+    }
+
+    private List<Classifier.Recognition> filter(Bitmap bitmap, List<Classifier.Recognition> detections) {
+        List<Classifier.Recognition> results = new ArrayList<>();
+        Map<String, Mat> histograms = new HashMap<>();
+
+        for (int i = 0; i < detections.size(); i++) {
+            Mat image = new Mat();
+            Mat hist = new Mat();
+
+            bitmapToMat(bitmap, image);
+
+            RectF roi_ = detections.get(i).getLocation();
+            Rect roi = new Rect((int) roi_.left, (int) roi_.top, (int) roi_.width(), (int) roi_.height());
+
+            int hist_input = 32;
+
+            Imgproc.rectangle(image, roi, new Scalar(0, 255, 0, 255), 1);
+            Imgproc.resize(image,image, new org.opencv.core.Size(hist_input, hist_input));
+            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
+            Imgproc.resize(image, image, new org.opencv.core.Size(hist_input / 2, hist_input / 2));
+            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
+            Imgproc.resize(image, image, new org.opencv.core.Size(hist_input / 4, hist_input / 4));
+            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
+            Imgproc.resize(image, image, new org.opencv.core.Size(hist_input / 8, hist_input / 8));
+            Imgproc.GaussianBlur(image, hist, new org.opencv.core.Size(3, 3), 1);
+            Imgproc.resize(image, image, new org.opencv.core.Size(hist_input / 16, hist_input / 16));
+            Imgproc.GaussianBlur(image, hist, new org.opencv.core.Size(3, 3), 1);
+
+            double maxSimular = 0f;
+            String selectId = "";
+
+            for (Map<String, Mat> prevHistogram : savedDetectionsHistogram) {
+                for (String key : prevHistogram.keySet()) {
+                    Mat prev = prevHistogram.get(key);
+                    double val = 0f;
+
+                    for (int j = 0; j < hist.height(); j++) {
+                        for (int k = 0; k < hist.height(); k++) {
+                            double p = prev.get(new int[]{j, k})[0];
+                            double h = hist.get(new int[]{j, k})[0];
+
+                            val += (p > h ? h : p) / (p > h ? p : h);
+                        }
+                    }
+
+                    val = val / (hist.height() * hist.width());
+
+                    Log.i("compareHist", "" + val);
+
+                    if (val > 0.5f && val > maxSimular) {
+                        maxSimular = val;
+                        selectId = key;
+                    }
+                }
+            }
+
+            histograms.put(selectId, hist);
+
+            if ("".equals(selectId)) {
+                selectId = "" + idSequence++;
+            }
+            detections.get(i).setId(selectId);
+        }
+        if (savedDetectionsHistogram.size() > maxSaveDetections) {
+            savedDetectionsHistogram.remove(0);
+        }
+        savedDetectionsHistogram.add(histograms);
+
+        return detections;
     }
 
     @Override
