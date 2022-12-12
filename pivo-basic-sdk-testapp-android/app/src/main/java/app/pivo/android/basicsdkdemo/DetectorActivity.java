@@ -17,6 +17,7 @@
 package app.pivo.android.basicsdkdemo;
 
 import static org.opencv.android.Utils.bitmapToMat;
+import static org.opencv.android.Utils.matToBitmap;
 
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -351,32 +352,68 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         }
     }
 
+
+    private int max(Bitmap bitmap, int x, int y, int kernel) {
+        int result = 0;
+
+        for (int i = y; i < (y + kernel); i++) {
+            for (int j = x; j < (x + kernel); j++) {
+                int pixel_temp = bitmap.getPixel(j, i);
+                long pixel = (pixel_temp & 0x80000000) == 0x80000000 ? pixel_temp & 0x7FFFFFFF + 0x80000000l : pixel_temp ;
+
+                if (pixel > result) {
+                    result = (int) pixel;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private Mat MaxPooling2D(Mat src, int kernel) {
+        Bitmap result = Bitmap.createBitmap(src.width() / 2, src.height() / 2, Config.ARGB_8888);
+        Bitmap tempbitmap = Bitmap.createBitmap(src.width(), src.height(), Config.ARGB_8888);
+        matToBitmap(src, tempbitmap);
+
+        for (int i = 0; i < src.height(); i += kernel) {
+            for (int j = 0; j < src.width(); j += kernel) {
+                int maxpixel = max(tempbitmap, j, i, kernel);
+
+                result.setPixel(j / kernel, i / kernel, maxpixel);
+            }
+        }
+
+        Mat resultmat = new Mat();
+        bitmapToMat(result, resultmat);
+        return resultmat;
+    }
+
     private List<Classifier.Recognition> filter(Bitmap bitmap, List<Classifier.Recognition> detections) {
         List<Classifier.Recognition> results = new ArrayList<>();
         Map<String, Mat> histograms = new HashMap<>();
 
         for (int i = 0; i < detections.size(); i++) {
-            Mat image = new Mat();
+            Mat original = new Mat();
             Mat hist = new Mat();
 
-            bitmapToMat(bitmap, image);
+            bitmapToMat(bitmap, original);
 
             RectF roi_ = detections.get(i).getLocation();
-            Rect roi = new Rect((int) roi_.left, (int) roi_.top, (int) roi_.width(), (int) roi_.height());
+            Rect roi_area = new Rect((int) roi_.left, (int) roi_.top, (int) roi_.width(), (int) roi_.height());
 
             int hist_input = 32;
 
-            Imgproc.rectangle(image, roi, new Scalar(0, 255, 0, 255), 1);
+            Mat image = original.submat(roi_area);
+
             Imgproc.resize(image,image, new org.opencv.core.Size(hist_input, hist_input));
             Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
-            Imgproc.resize(image, image, new org.opencv.core.Size(hist_input / 2, hist_input / 2));
+            image = MaxPooling2D(image, 2);
             Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
-            Imgproc.resize(image, image, new org.opencv.core.Size(hist_input / 4, hist_input / 4));
+            image = MaxPooling2D(image, 2);
             Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
-            Imgproc.resize(image, image, new org.opencv.core.Size(hist_input / 8, hist_input / 8));
-            Imgproc.GaussianBlur(image, hist, new org.opencv.core.Size(3, 3), 1);
-            Imgproc.resize(image, image, new org.opencv.core.Size(hist_input / 16, hist_input / 16));
-            Imgproc.GaussianBlur(image, hist, new org.opencv.core.Size(3, 3), 1);
+            image = MaxPooling2D(image, 2);
+            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
+            hist = MaxPooling2D(image, 2);
 
             double maxSimular = 0f;
             String selectId = "";
@@ -399,19 +436,19 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                     Log.i("compareHist", "" + val);
 
-                    if (val > 0.5f && val > maxSimular) {
+                    if (val > 0.95f && val > maxSimular) {
                         maxSimular = val;
                         selectId = key;
                     }
                 }
             }
 
-            histograms.put(selectId, hist);
-
             if ("".equals(selectId)) {
                 selectId = "" + idSequence++;
             }
             detections.get(i).setId(selectId);
+
+            histograms.put(selectId, hist);
         }
         if (savedDetectionsHistogram.size() > maxSaveDetections) {
             savedDetectionsHistogram.remove(0);
