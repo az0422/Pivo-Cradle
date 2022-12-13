@@ -352,12 +352,12 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         }
     }
 
-
     private int max(Bitmap bitmap, int x, int y, int kernel) {
         int result = 0;
 
         for (int i = y; i < (y + kernel); i++) {
             for (int j = x; j < (x + kernel); j++) {
+                // signed int를 unsigned int로 변환 후 long으로 cast
                 int pixel_temp = bitmap.getPixel(j, i);
                 long pixel = (pixel_temp & 0x80000000) == 0x80000000 ? pixel_temp & 0x7FFFFFFF + 0x80000000l : pixel_temp ;
 
@@ -393,23 +393,31 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         Map<String, Mat> histograms = new HashMap<>();
 
         for (int i = 0; i < detections.size(); i++) {
+            int minid = 0x7FFFFFFF;
+
             Mat original = new Mat();
-            Mat hist = new Mat();
+            Mat hist;
 
             bitmapToMat(bitmap, original);
 
+            // 인식 된 부분의 ROI 영역 추출
+            int hist_input = 32;
             RectF roi_ = detections.get(i).getLocation();
             Rect roi_area = new Rect((int) roi_.left, (int) roi_.top, (int) roi_.width(), (int) roi_.height());
-
-            int hist_input = 32;
-
             Mat image = original.submat(roi_area);
-
             Imgproc.resize(image,image, new org.opencv.core.Size(hist_input, hist_input));
+
+            // ROI 영역의 feature map 추출
             Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
             image = MaxPooling2D(image, 2);
             Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
             image = MaxPooling2D(image, 2);
+            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
+            image = MaxPooling2D(image, 2);
+            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
+            Imgproc.resize(image, image, new org.opencv.core.Size(8, 8), Imgproc.INTER_LINEAR);
+            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
+            Imgproc.resize(image, image, new org.opencv.core.Size(16, 16), Imgproc.INTER_LINEAR);
             Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
             image = MaxPooling2D(image, 2);
             Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
@@ -423,6 +431,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     Mat prev = prevHistogram.get(key);
                     double val = 0f;
 
+                    // feature map의 유사도 검사
                     for (int j = 0; j < hist.height(); j++) {
                         for (int k = 0; k < hist.height(); k++) {
                             double p = prev.get(new int[]{j, k})[0];
@@ -431,22 +440,22 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                             val += (p > h ? h : p) / (p > h ? p : h);
                         }
                     }
-
                     val = val / (hist.height() * hist.width());
 
-                    Log.i("compareHist", "" + val);
-
-                    if (val > 0.95f && val > maxSimular) {
+                    // 유사도 기반으로 기존 ID 검색
+                    if (val > 0.75f && val > maxSimular && Integer.parseInt(key) < minid) {
                         maxSimular = val;
                         selectId = key;
+                        minid = Integer.parseInt(key);
                     }
                 }
             }
 
+            // ID가 검색 되지 않은 경우 다음 번호로 ID 할당
             if ("".equals(selectId)) {
                 selectId = "" + idSequence++;
             }
-            detections.get(i).setId(selectId);
+            detections.get(i).setId(selectId + " " + "feat.: " + (float)maxSimular);
 
             histograms.put(selectId, hist);
         }
