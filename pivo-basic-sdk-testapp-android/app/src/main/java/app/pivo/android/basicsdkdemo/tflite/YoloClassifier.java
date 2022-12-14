@@ -30,9 +30,6 @@ import java.util.PriorityQueue;
 import java.util.Vector;
 
 import app.pivo.android.basicsdkdemo.env.Utils;
-import io.reactivex.MaybeTransformer;
-
-import org.tensorflow.lite.gpu.CompatibilityList;
 
 public class YoloClassifier implements Classifier {
     private int INPUT_SIZE;

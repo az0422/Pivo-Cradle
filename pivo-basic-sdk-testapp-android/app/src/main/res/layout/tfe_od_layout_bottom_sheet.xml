@@ -239,7 +239,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="right"
-            android:text="performance"/>
+            android:text="accuracy"/>
     </LinearLayout>
 
     <LinearLayout
@@ -251,14 +251,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="performance"/>
+            android:text="accuracy"/>
 
         <Button
             android:id="@+id/model_speed"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="speed"/>
+            android:text="fast"/>
 
     </LinearLayout>
 

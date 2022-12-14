@@ -405,7 +405,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             RectF roi_ = detections.get(i).getLocation();
             Rect roi_area = new Rect((int) roi_.left, (int) roi_.top, (int) roi_.width(), (int) roi_.height());
             Mat image = original.submat(roi_area);
-            Imgproc.resize(image,image, new org.opencv.core.Size(hist_input, hist_input));
+            Imgproc.resize(image,image, new org.opencv.core.Size(hist_input, hist_input), Imgproc.INTER_LANCZOS4);
 
             // ROI 영역의 feature map 추출
             Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
@@ -415,15 +415,15 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
             image = MaxPooling2D(image, 2);
             Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
-            Imgproc.resize(image, image, new org.opencv.core.Size(8, 8), Imgproc.INTER_LINEAR);
+            Imgproc.resize(image, image, new org.opencv.core.Size(8, 8), Imgproc.INTER_NEAREST);
             Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
-            Imgproc.resize(image, image, new org.opencv.core.Size(16, 16), Imgproc.INTER_LINEAR);
+            Imgproc.resize(image, image, new org.opencv.core.Size(16, 16), Imgproc.INTER_NEAREST);
             Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
             image = MaxPooling2D(image, 2);
             Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
             hist = MaxPooling2D(image, 2);
 
-            double maxSimular = 0f;
+            double maxSimular = 0.75f;
             String selectId = "";
 
             for (Map<String, Mat> prevHistogram : savedDetectionsHistogram) {
@@ -443,7 +443,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     val = val / (hist.height() * hist.width());
 
                     // 유사도 기반으로 기존 ID 검색
-                    if (val > 0.75f && val > maxSimular && Integer.parseInt(key) < minid) {
+                    if (val > maxSimular && Integer.parseInt(key) < minid) {
                         maxSimular = val;
                         selectId = key;
                         minid = Integer.parseInt(key);
@@ -455,7 +455,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             if ("".equals(selectId)) {
                 selectId = "" + idSequence++;
             }
-            detections.get(i).setId(selectId + " " + "feat.: " + (float)maxSimular);
+            detections.get(i).setId(selectId + " " + "prev.: " + (String.valueOf(maxSimular * 100).substring(0, 4)) + "%\n");
 
             histograms.put(selectId, hist);
         }
@@ -493,7 +493,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         runInBackground(() -> detector.setNumThreads(numThreads));
     }
 
-    private String model_name = "performance";
+    private String model_name = "accuracy";
     private String modelSelect = TF_OD_API_MODEL_FILE;
     private int[] output_shape = TF_OD_API_OUTPUT_SHAPE;
     private int input_size = TF_OD_API_INPUT_SIZE;
@@ -509,7 +509,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         switch(v.getId()) {
             case R.id.model_performance:
-                model_name = "performance";
+                model_name = "accuracy";
                 modelSelect = TF_OD_API_MODEL_FILE;
                 output_shape = new int[]{ 25200, 25200 };
                 input_size = 640;
@@ -548,11 +548,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     frameToCropTransform = tempFrame;
                     cropToFrameTransform = tempCrop;
                 }
-
                 break;
 
             case R.id.model_speed:
-                model_name = "speed";
+                model_name = "fast";
                 modelSelect = "yolov7-lite-fp16.tflite";
                 output_shape = new int[]{ 6300, 6300 };
                 input_size = 320;
