@@ -42,10 +42,7 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfFloat;
-import org.opencv.core.MatOfInt;
 import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.IOException;
@@ -73,9 +70,9 @@ import app.pivo.android.basicsdkdemo.tracking.MultiBoxTracker;
 public class DetectorActivity extends CameraActivity implements OnImageAvailableListener, View.OnClickListener {
     private static final Logger LOGGER = new Logger();
 
-    private static int TF_OD_API_INPUT_SIZE = 320;
+    private static int TF_OD_API_INPUT_SIZE = 192;
     private static float CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
-    private static int[] TF_OD_API_OUTPUT_SHAPE = { 6300, 6300 };
+    private static int[] TF_OD_API_OUTPUT_SHAPE = { 2268, 2268 };
     private static final boolean TF_OD_API_IS_QUANTIZED = false;
     private static boolean is_tiny = false;
     private static final String TF_OD_API_MODEL_FILE = "yolo-lite-fp16.tflite";
@@ -110,7 +107,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private BorderedText borderedText;
 
-    private int maxSaveDetections = 100;
+    private int maxSaveDetections = 50;
 
     @Override
     public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -190,8 +187,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         findViewById(R.id.select_cat).setOnClickListener(this);
         findViewById(R.id.select_all).setOnClickListener(this);
 
-//        findViewById(R.id.model_performance).setOnClickListener(this);
-//        findViewById(R.id.model_speed).setOnClickListener(this);
+        findViewById(R.id.model_performance).setOnClickListener(this);
+        findViewById(R.id.model_speed).setOnClickListener(this);
     }
     private List<Classifier.Recognition> previous;
 
@@ -375,7 +372,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         for (int i = 0; i < src.height(); i += kernel) {
             for (int j = 0; j < src.width(); j += kernel) {
                 int maxpixel = max(tempbitmap, j, i, kernel);
-
                 result.setPixel(j / kernel, i / kernel, maxpixel);
             }
         }
@@ -405,7 +401,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             RectF roi_ = detections.get(i).getLocation();
             Rect roi_area = new Rect((int) roi_.left, (int) roi_.top, (int) roi_.width(), (int) roi_.height());
             Mat image = original.submat(roi_area);
-            Imgproc.resize(image,image, new org.opencv.core.Size(hist_input, hist_input), Imgproc.INTER_LANCZOS4);
+            Imgproc.resize(image,image, new org.opencv.core.Size(hist_input, hist_input), Imgproc.INTER_LINEAR);
 
             // ROI 영역의 feature map 추출
             Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
@@ -415,13 +411,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
             Imgproc.resize(image, image, new org.opencv.core.Size(8, 8), Imgproc.INTER_NEAREST);
             Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
-            Imgproc.resize(image, image, new org.opencv.core.Size(16, 16), Imgproc.INTER_NEAREST);
-            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
-            image = MaxPooling2D(image, 2);
-            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
             hist = MaxPooling2D(image, 2);
 
-            double maxSimular = 0.75f;
+            double maxSimular = 0.60f;
             String selectId = "";
 
             for (Map<String, Object[]> prevHistogram : savedDetectionsHistogram) {
@@ -429,6 +421,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     Mat prev = (Mat) prevHistogram.get(key)[0];
                     String title = (String) prevHistogram.get(key)[1];
                     double val = 0f;
+
+                    if (!title.equals(detections.get(i).getTitle())) continue;
 
                     // feature map의 유사도 검사
                     for (int j = 0; j < hist.height(); j++) {
@@ -442,7 +436,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     val = val / (hist.height() * hist.width());
 
                     // 유사도 기반으로 기존 ID 검색
-                    if (val > maxSimular && Integer.parseInt(key) < minid && title.equals(detections.get(i).getTitle())) {
+                    if (val > maxSimular && Integer.parseInt(key) < minid) {
                         maxSimular = val;
                         selectId = key;
                         minid = Integer.parseInt(key);
@@ -507,89 +501,89 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         Matrix tempCrop = cropToFrameTransform;
 
         switch(v.getId()) {
-//            case R.id.model_performance:
-//                model_name = "accuracy";
-//                modelSelect = TF_OD_API_MODEL_FILE;
-//                output_shape = new int[]{ 25200, 25200 };
-//                input_size = 640;
-//                is_tiny = true;
-//
-//                try {
-//                    TF_OD_API_INPUT_SIZE = input_size;
-//                    croppedBitmap = Bitmap.createBitmap(input_size, input_size, Config.ARGB_8888);
-//
-//                    frameToCropTransform =
-//                            ImageUtils.getTransformationMatrix(
-//                                    previewWidth, previewHeight,
-//                                    input_size, input_size,
-//                                    sensorOrientation, MAINTAIN_ASPECT);
-//
-//                    cropToFrameTransform = new Matrix();
-//                    frameToCropTransform.invert(cropToFrameTransform);
-//
-//                    CENTER_POSITION = input_size / 2;
-//
-//                    detector = new YoloClassifier(
-//                            getAssets(),
-//                            modelSelect,
-//                            TF_OD_API_LABELS_FILE,
-//                            TF_OD_API_IS_QUANTIZED,
-//                            input_size,
-//                            output_shape,
-//                            5);
-//
-//                    detector.setContext(this);
-//
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                    detector = temp;
-//                    croppedBitmap = tempCropped;
-//                    frameToCropTransform = tempFrame;
-//                    cropToFrameTransform = tempCrop;
-//                }
-//                break;
-//
-//            case R.id.model_speed:
-//                model_name = "fast";
-//                modelSelect = "yolo-lite-fp16.tflite";
-//                output_shape = new int[]{ 6300, 6300 };
-//                input_size = 320;
-//                is_tiny = true;
-//
-//                try {
-//                    TF_OD_API_INPUT_SIZE = input_size;
-//                    croppedBitmap = Bitmap.createBitmap(input_size, input_size, Config.ARGB_8888);
-//
-//                    frameToCropTransform =
-//                            ImageUtils.getTransformationMatrix(
-//                                    previewWidth, previewHeight,
-//                                    input_size, input_size,
-//                                    sensorOrientation, MAINTAIN_ASPECT);
-//
-//                    cropToFrameTransform = new Matrix();
-//                    frameToCropTransform.invert(cropToFrameTransform);
-//
-//                    CENTER_POSITION = input_size / 2;
-//
-//                    detector = new YoloClassifier(
-//                            getAssets(),
-//                            modelSelect,
-//                            TF_OD_API_LABELS_FILE,
-//                            TF_OD_API_IS_QUANTIZED,
-//                            input_size,
-//                            output_shape,
-//                            5);
-//
-//                    detector.setContext(this);
-//
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                    detector = temp;
-//                    croppedBitmap = tempCropped;
-//                    frameToCropTransform = tempFrame;
-//                    cropToFrameTransform = tempCrop;
-//                }
-//                break;
+            case R.id.model_performance:
+                model_name = "accuracy";
+                modelSelect = TF_OD_API_MODEL_FILE;
+                output_shape = new int[]{ 25200, 25200 };
+                input_size = 640;
+                is_tiny = true;
+
+                try {
+                    TF_OD_API_INPUT_SIZE = input_size;
+                    croppedBitmap = Bitmap.createBitmap(input_size, input_size, Config.ARGB_8888);
+
+                    frameToCropTransform =
+                            ImageUtils.getTransformationMatrix(
+                                    previewWidth, previewHeight,
+                                    input_size, input_size,
+                                    sensorOrientation, MAINTAIN_ASPECT);
+
+                    cropToFrameTransform = new Matrix();
+                    frameToCropTransform.invert(cropToFrameTransform);
+
+                    CENTER_POSITION = input_size / 2;
+
+                    detector = new YoloClassifier(
+                            getAssets(),
+                            modelSelect,
+                            TF_OD_API_LABELS_FILE,
+                            TF_OD_API_IS_QUANTIZED,
+                            input_size,
+                            output_shape,
+                            5);
+
+                    detector.setContext(this);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    detector = temp;
+                    croppedBitmap = tempCropped;
+                    frameToCropTransform = tempFrame;
+                    cropToFrameTransform = tempCrop;
+                }
+                break;
+
+            case R.id.model_speed:
+                model_name = "fast";
+                modelSelect = "yolo-lite-fp16.tflite";
+                output_shape = new int[]{ 6300, 6300 };
+                input_size = 320;
+                is_tiny = true;
+
+                try {
+                    TF_OD_API_INPUT_SIZE = input_size;
+                    croppedBitmap = Bitmap.createBitmap(input_size, input_size, Config.ARGB_8888);
+
+                    frameToCropTransform =
+                            ImageUtils.getTransformationMatrix(
+                                    previewWidth, previewHeight,
+                                    input_size, input_size,
+                                    sensorOrientation, MAINTAIN_ASPECT);
+
+                    cropToFrameTransform = new Matrix();
+                    frameToCropTransform.invert(cropToFrameTransform);
+
+                    CENTER_POSITION = input_size / 2;
+
+                    detector = new YoloClassifier(
+                            getAssets(),
+                            modelSelect,
+                            TF_OD_API_LABELS_FILE,
+                            TF_OD_API_IS_QUANTIZED,
+                            input_size,
+                            output_shape,
+                            5);
+
+                    detector.setContext(this);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    detector = temp;
+                    croppedBitmap = tempCropped;
+                    frameToCropTransform = tempFrame;
+                    cropToFrameTransform = tempCrop;
+                }
+                break;
 
             case R.id.select_all:
                 selectedObject = "all";
@@ -609,7 +603,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         }
 
         ((TextView)findViewById(R.id.selected_object)).setText(selectedObject);
-//        ((TextView)findViewById(R.id.select_model)).setText(model_name);
-
+        ((TextView)findViewById(R.id.select_model)).setText(model_name);
     }
 }
