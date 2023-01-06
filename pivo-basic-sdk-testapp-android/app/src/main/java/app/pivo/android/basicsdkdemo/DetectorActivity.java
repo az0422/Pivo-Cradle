@@ -60,6 +60,7 @@ import app.pivo.android.basicsdkdemo.env.BorderedText;
 import app.pivo.android.basicsdkdemo.env.ImageUtils;
 import app.pivo.android.basicsdkdemo.env.Logger;
 import app.pivo.android.basicsdkdemo.tflite.Classifier;
+import app.pivo.android.basicsdkdemo.tflite.FeatureExtract;
 import app.pivo.android.basicsdkdemo.tflite.YoloClassifier;
 import app.pivo.android.basicsdkdemo.tracking.MultiBoxTracker;
 
@@ -70,26 +71,26 @@ import app.pivo.android.basicsdkdemo.tracking.MultiBoxTracker;
 public class DetectorActivity extends CameraActivity implements OnImageAvailableListener, View.OnClickListener {
     private static final Logger LOGGER = new Logger();
 
-    private static int TF_OD_API_INPUT_SIZE = 192;
+    private static int TF_OD_API_INPUT_SIZE = 640;
     private static float CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
-    private static int[] TF_OD_API_OUTPUT_SHAPE = { 2268, 2268 };
+    private static int[] TF_OD_API_OUTPUT_SHAPE = {25200, 25200};
     private static final boolean TF_OD_API_IS_QUANTIZED = false;
     private static boolean is_tiny = false;
-    private static final String TF_OD_API_MODEL_FILE = "yolo-lite-fp16.tflite";
+    private static final String TF_OD_API_MODEL_FILE = "yolov7-tiny-fp16.tflite";
 
     private static final String TF_OD_API_LABELS_FILE = "obj.names";
 
     private static final DetectorMode MODE = DetectorMode.TF_OD_API;
     private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.3f;
     private static final boolean MAINTAIN_ASPECT = false;
-    private static final Size DESIRED_PREVIEW_SIZE = new Size(1920 , 1080);
+    private static final Size DESIRED_PREVIEW_SIZE = new Size(1920, 1080);
     private static final boolean SAVE_PREVIEW_BITMAP = false;
     private static final float TEXT_SIZE_DIP = 10;
     OverlayView trackingOverlay;
     private Integer sensorOrientation;
 
     private YoloClassifier detector;
-    private Classifier detectorAcc, detectorFast;
+    private FeatureExtract extractor;
 
     private long lastProcessingTimeMs;
     private Bitmap rgbFrameBitmap = null;
@@ -144,6 +145,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             finish();
         }
 
+        extractor = new FeatureExtract(getAssets(),
+                         "feature_map.tflite",
+                             64,
+                          3072);
+
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
 
@@ -190,6 +196,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         findViewById(R.id.model_performance).setOnClickListener(this);
         findViewById(R.id.model_speed).setOnClickListener(this);
     }
+
     private List<Classifier.Recognition> previous;
 
     @Override
@@ -227,9 +234,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                         try {
                             temp = detector.recognizeImage(croppedBitmap);
                             temp = filter(croppedBitmap, temp);
-                        //    previous = temp;
+                            //    previous = temp;
                         } catch (Exception e) {
-                          e.printStackTrace();
+                            e.printStackTrace();
                         }
                         List<Classifier.Recognition> results;
 
@@ -238,7 +245,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                         } else {
                             results = new ArrayList<>();
 
-                            for (Classifier.Recognition record: temp) {
+                            for (Classifier.Recognition record : temp) {
                                 if (record.getTitle().equals(selectedObject)) results.add(record);
                             }
                         }
@@ -247,16 +254,16 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                             runInBackground(() -> {
                                 if (position < CENTER_POSITION - TF_OD_API_INPUT_SIZE / 10) {
-                                    PivoSdk.getInstance().turnLeftContinuously((int)(30 * (1 - (CENTER_POSITION - position) / CENTER_POSITION)));
+                                    PivoSdk.getInstance().turnLeftContinuously((int) (30 * (1 - (CENTER_POSITION - position) / CENTER_POSITION)));
                                 } else if (CENTER_POSITION + TF_OD_API_INPUT_SIZE / 10 < position) {
-                                    PivoSdk.getInstance().turnRightContinuously((int)(30 * (1 - (position - CENTER_POSITION) / CENTER_POSITION)));
+                                    PivoSdk.getInstance().turnRightContinuously((int) (30 * (1 - (position - CENTER_POSITION) / CENTER_POSITION)));
                                 } else {
                                     PivoSdk.getInstance().stop();
                                 }
                             });
 
                             runOnUiThread(() -> {
-                                ((TextView)findViewById(R.id.object_center_position)).setText(position + "px");
+                                ((TextView) findViewById(R.id.object_center_position)).setText(position + "px");
                             });
 
                             Log.i("Position", "" + position);
@@ -321,21 +328,20 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         @Override
         public void onManagerConnected(int status) {
             switch (status) {
-                case LoaderCallbackInterface.SUCCESS:
-                {
+                case LoaderCallbackInterface.SUCCESS: {
                     Log.i("OpenCV", "OpenCV loaded successfully");
 
-                } break;
-                default:
-                {
+                }
+                break;
+                default: {
                     super.onManagerConnected(status);
-                } break;
+                }
+                break;
             }
         }
     };
 
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
         if (!OpenCVLoader.initDebug()) {
             Log.d("OpenCV", "Internal OpenCV library not found. Using OpenCV Manager for initialization");
@@ -353,7 +359,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             for (int j = x; j < (x + kernel); j++) {
                 // signed int를 unsigned int로 변환 후 long으로 cast
                 int pixel_temp = bitmap.getPixel(j, i);
-                long pixel = (pixel_temp & 0x80000000) == 0x80000000 ? pixel_temp & 0x7FFFFFFF + 0x80000000l : pixel_temp ;
+                long pixel = (pixel_temp & 0x80000000) == 0x80000000 ? pixel_temp & 0x7FFFFFFF + 0x80000000l : pixel_temp;
 
                 if (pixel > result) {
                     result = (int) pixel;
@@ -392,48 +398,36 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             int minid = 0x7FFFFFFF;
 
             Mat original = new Mat();
-            Mat hist;
-
             bitmapToMat(bitmap, original);
 
             // 인식 된 부분의 ROI 영역 추출
-            int hist_input = 16;
+            int hist_input = 64;
             RectF roi_ = detections.get(i).getLocation();
             Rect roi_area = new Rect((int) roi_.left, (int) roi_.top, (int) roi_.width(), (int) roi_.height());
             Mat image = original.submat(roi_area);
-            Imgproc.resize(image,image, new org.opencv.core.Size(hist_input, hist_input), Imgproc.INTER_LINEAR);
+            Imgproc.resize(image, image, new org.opencv.core.Size(hist_input, hist_input), Imgproc.INTER_LINEAR);
 
-            // ROI 영역의 feature map 추출
-            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
-            image = MaxPooling2D(image, 2);
-            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
-            image = MaxPooling2D(image, 2);
-            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
-            Imgproc.resize(image, image, new org.opencv.core.Size(8, 8), Imgproc.INTER_NEAREST);
-            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
-            hist = MaxPooling2D(image, 2);
+            Bitmap bitmap_image = Bitmap.createBitmap(image.width(), image.height(), Config.ARGB_8888);
+            matToBitmap(image, bitmap_image);
 
+            float[] feature_map = extractor.getFeature(bitmap_image);
             double maxSimular = 0.60f;
             String selectId = "";
 
             for (Map<String, Object[]> prevHistogram : savedDetectionsHistogram) {
                 for (String key : prevHistogram.keySet()) {
-                    Mat prev = (Mat) prevHistogram.get(key)[0];
+                    float[] prev = (float[]) prevHistogram.get(key)[0];
                     String title = (String) prevHistogram.get(key)[1];
                     double val = 0f;
 
                     if (!title.equals(detections.get(i).getTitle())) continue;
 
-                    // feature map의 유사도 검사
-                    for (int j = 0; j < hist.height(); j++) {
-                        for (int k = 0; k < hist.height(); k++) {
-                            double p = prev.get(new int[]{j, k})[0];
-                            double h = hist.get(new int[]{j, k})[0];
-
-                            val += (p > h ? h : p) / (p > h ? p : h);
-                        }
+                    for (int j = 0; j < feature_map.length; j++) {
+                        double p = prev[j];
+                        double h = feature_map[j];
+                        val += (p > h ? h : p) / (p > h ? p : h);
                     }
-                    val = val / (hist.height() * hist.width());
+                    val = val / feature_map.length;
 
                     // 유사도 기반으로 기존 ID 검색
                     if (val > maxSimular && Integer.parseInt(key) < minid) {
@@ -450,7 +444,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             }
             detections.get(i).setId(selectId + " " + "prev.: " + (String.valueOf(maxSimular * 100).substring(0, 4)) + "%");
 
-            histograms.put(selectId, new Object[]{ hist, detections.get(i).getTitle() });
+            histograms.put(selectId, new Object[]{ feature_map, detections.get(i).getTitle() });
         }
         if (savedDetectionsHistogram.size() > maxSaveDetections) {
             savedDetectionsHistogram.remove(0);
@@ -459,6 +453,63 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         return detections;
     }
+
+//            // ROI 영역의 feature map 추출
+//            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
+//            image = MaxPooling2D(image, 2);
+//            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
+//            image = MaxPooling2D(image, 2);
+//            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
+//            Imgproc.resize(image, image, new org.opencv.core.Size(8, 8), Imgproc.INTER_NEAREST);
+//            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
+//            hist = MaxPooling2D(image, 2);
+//
+//            double maxSimular = 0.60f;
+//            String selectId = "";
+//
+//            for (Map<String, Object[]> prevHistogram : savedDetectionsHistogram) {
+//                for (String key : prevHistogram.keySet()) {
+//                    Mat prev = (Mat) prevHistogram.get(key)[0];
+//                    String title = (String) prevHistogram.get(key)[1];
+//                    double val = 0f;
+//
+//                    if (!title.equals(detections.get(i).getTitle())) continue;
+//
+//                    // feature map의 유사도 검사
+//                    for (int j = 0; j < hist.height(); j++) {
+//                        for (int k = 0; k < hist.height(); k++) {
+//                            double p = prev.get(new int[]{j, k})[0];
+//                            double h = hist.get(new int[]{j, k})[0];
+//
+//                            val += (p > h ? h : p) / (p > h ? p : h);
+//                        }
+//                    }
+//                    val = val / (hist.height() * hist.width());
+//
+//                    // 유사도 기반으로 기존 ID 검색
+//                    if (val > maxSimular && Integer.parseInt(key) < minid) {
+//                        maxSimular = val;
+//                        selectId = key;
+//                        minid = Integer.parseInt(key);
+//                    }
+//                }
+//            }
+//
+//            // ID가 검색 되지 않은 경우 다음 번호로 ID 할당
+//            if ("".equals(selectId)) {
+//                selectId = "" + idSequence++;
+//            }
+//            detections.get(i).setId(selectId + " " + "prev.: " + (String.valueOf(maxSimular * 100).substring(0, 4)) + "%");
+//
+//            histograms.put(selectId, new Object[]{ hist, detections.get(i).getTitle() });
+//        }
+//        if (savedDetectionsHistogram.size() > maxSaveDetections) {
+//            savedDetectionsHistogram.remove(0);
+//        }
+//        savedDetectionsHistogram.add(histograms);
+//
+//        return detections;
+//    }
 
     @Override
     protected int getLayoutId() {
@@ -546,8 +597,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             case R.id.model_speed:
                 model_name = "fast";
                 modelSelect = "yolo-lite-fp16.tflite";
-                output_shape = new int[]{ 6300, 6300 };
-                input_size = 320;
+                output_shape = new int[]{ 2268, 2268 };
+                input_size = 192;
                 is_tiny = true;
 
                 try {
