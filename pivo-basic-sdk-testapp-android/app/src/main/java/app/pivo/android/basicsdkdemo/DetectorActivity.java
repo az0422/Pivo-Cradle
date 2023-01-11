@@ -19,6 +19,7 @@ package app.pivo.android.basicsdkdemo;
 import static org.opencv.android.Utils.bitmapToMat;
 import static org.opencv.android.Utils.matToBitmap;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
@@ -30,6 +31,7 @@ import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Size;
@@ -45,6 +47,8 @@ import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -148,7 +152,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         extractor = new FeatureExtract(getAssets(),
                          "feature_map.tflite",
                              64,
-                          3072);
+                          1280);
 
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
@@ -352,43 +356,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         }
     }
 
-    private int max(Bitmap bitmap, int x, int y, int kernel) {
-        int result = 0;
-
-        for (int i = y; i < (y + kernel); i++) {
-            for (int j = x; j < (x + kernel); j++) {
-                // signed int를 unsigned int로 변환 후 long으로 cast
-                int pixel_temp = bitmap.getPixel(j, i);
-                long pixel = (pixel_temp & 0x80000000) == 0x80000000 ? pixel_temp & 0x7FFFFFFF + 0x80000000l : pixel_temp;
-
-                if (pixel > result) {
-                    result = (int) pixel;
-                }
-            }
-        }
-
-        return result;
-    }
-
-    private Mat MaxPooling2D(Mat src, int kernel) {
-        Bitmap result = Bitmap.createBitmap(src.width() / 2, src.height() / 2, Config.ARGB_8888);
-        Bitmap tempbitmap = Bitmap.createBitmap(src.width(), src.height(), Config.ARGB_8888);
-        matToBitmap(src, tempbitmap);
-
-        for (int i = 0; i < src.height(); i += kernel) {
-            for (int j = 0; j < src.width(); j += kernel) {
-                int maxpixel = max(tempbitmap, j, i, kernel);
-                result.setPixel(j / kernel, i / kernel, maxpixel);
-            }
-        }
-
-        Mat resultmat = new Mat();
-        bitmapToMat(result, resultmat);
-        return resultmat;
-    }
-
     private Vector<Map<String, Object[]>> savedDetectionsHistogram = new Vector<>();
     private int idSequence = 0;
+
+    private int file_sequence = 0;
 
     private List<Classifier.Recognition> filter(Bitmap bitmap, List<Classifier.Recognition> detections) {
         List<Classifier.Recognition> results = new ArrayList<>();
@@ -411,7 +382,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             matToBitmap(image, bitmap_image);
 
             float[] feature_map = extractor.getFeature(bitmap_image);
-            double maxSimular = 0.60f;
+
+            double maxSimular = 0.75f;
             String selectId = "";
 
             for (Map<String, Object[]> prevHistogram : savedDetectionsHistogram) {
@@ -453,63 +425,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         return detections;
     }
-
-//            // ROI 영역의 feature map 추출
-//            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
-//            image = MaxPooling2D(image, 2);
-//            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
-//            image = MaxPooling2D(image, 2);
-//            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
-//            Imgproc.resize(image, image, new org.opencv.core.Size(8, 8), Imgproc.INTER_NEAREST);
-//            Imgproc.GaussianBlur(image, image, new org.opencv.core.Size(3, 3), 1);
-//            hist = MaxPooling2D(image, 2);
-//
-//            double maxSimular = 0.60f;
-//            String selectId = "";
-//
-//            for (Map<String, Object[]> prevHistogram : savedDetectionsHistogram) {
-//                for (String key : prevHistogram.keySet()) {
-//                    Mat prev = (Mat) prevHistogram.get(key)[0];
-//                    String title = (String) prevHistogram.get(key)[1];
-//                    double val = 0f;
-//
-//                    if (!title.equals(detections.get(i).getTitle())) continue;
-//
-//                    // feature map의 유사도 검사
-//                    for (int j = 0; j < hist.height(); j++) {
-//                        for (int k = 0; k < hist.height(); k++) {
-//                            double p = prev.get(new int[]{j, k})[0];
-//                            double h = hist.get(new int[]{j, k})[0];
-//
-//                            val += (p > h ? h : p) / (p > h ? p : h);
-//                        }
-//                    }
-//                    val = val / (hist.height() * hist.width());
-//
-//                    // 유사도 기반으로 기존 ID 검색
-//                    if (val > maxSimular && Integer.parseInt(key) < minid) {
-//                        maxSimular = val;
-//                        selectId = key;
-//                        minid = Integer.parseInt(key);
-//                    }
-//                }
-//            }
-//
-//            // ID가 검색 되지 않은 경우 다음 번호로 ID 할당
-//            if ("".equals(selectId)) {
-//                selectId = "" + idSequence++;
-//            }
-//            detections.get(i).setId(selectId + " " + "prev.: " + (String.valueOf(maxSimular * 100).substring(0, 4)) + "%");
-//
-//            histograms.put(selectId, new Object[]{ hist, detections.get(i).getTitle() });
-//        }
-//        if (savedDetectionsHistogram.size() > maxSaveDetections) {
-//            savedDetectionsHistogram.remove(0);
-//        }
-//        savedDetectionsHistogram.add(histograms);
-//
-//        return detections;
-//    }
 
     @Override
     protected int getLayoutId() {
@@ -597,8 +512,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             case R.id.model_speed:
                 model_name = "fast";
                 modelSelect = "yolo-lite-fp16.tflite";
-                output_shape = new int[]{ 2268, 2268 };
-                input_size = 192;
+                output_shape = new int[]{ 4032, 4032 };
+                input_size = 256;
                 is_tiny = true;
 
                 try {
