@@ -80,7 +80,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static int[] TF_OD_API_OUTPUT_SHAPE = {25200, 25200};
     private static final boolean TF_OD_API_IS_QUANTIZED = false;
     private static boolean is_tiny = false;
-    private static final String TF_OD_API_MODEL_FILE = "yolov7-tiny-fp16.tflite";
+    private static final String TF_OD_API_MODEL_FILE = "yolov5s-fp16.tflite";
 
     private static final String TF_OD_API_LABELS_FILE = "obj.names";
 
@@ -113,6 +113,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private BorderedText borderedText;
 
     private int maxSaveDetections = 50;
+    private int FEATURE_INPUT_SIZE = 96;
 
     @Override
     public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -151,8 +152,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         extractor = new FeatureExtract(getAssets(),
                          "feature_map.tflite",
-                             64,
-                          1280);
+                             FEATURE_INPUT_SIZE,
+                          2880);
 
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
@@ -372,11 +373,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             bitmapToMat(bitmap, original);
 
             // 인식 된 부분의 ROI 영역 추출
-            int hist_input = 64;
             RectF roi_ = detections.get(i).getLocation();
             Rect roi_area = new Rect((int) roi_.left, (int) roi_.top, (int) roi_.width(), (int) roi_.height());
             Mat image = original.submat(roi_area);
-            Imgproc.resize(image, image, new org.opencv.core.Size(hist_input, hist_input), Imgproc.INTER_LINEAR);
+            Imgproc.resize(image, image, new org.opencv.core.Size(FEATURE_INPUT_SIZE, FEATURE_INPUT_SIZE), Imgproc.INTER_LINEAR);
 
             Bitmap bitmap_image = Bitmap.createBitmap(image.width(), image.height(), Config.ARGB_8888);
             matToBitmap(image, bitmap_image);
@@ -414,7 +414,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             if ("".equals(selectId)) {
                 selectId = "" + idSequence++;
             }
-            detections.get(i).setId(selectId + " " + "prev.: " + (String.valueOf(maxSimular * 100).substring(0, 4)) + "%");
+            detections.get(i).setId(selectId);
 
             histograms.put(selectId, new Object[]{ feature_map, detections.get(i).getTitle() });
         }
@@ -512,8 +512,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             case R.id.model_speed:
                 model_name = "fast";
                 modelSelect = "yolo-lite-fp16.tflite";
-                output_shape = new int[]{ 4032, 4032 };
-                input_size = 256;
+                output_shape = new int[]{ 6300, 6300 };
+                input_size = 320;
                 is_tiny = true;
 
                 try {
