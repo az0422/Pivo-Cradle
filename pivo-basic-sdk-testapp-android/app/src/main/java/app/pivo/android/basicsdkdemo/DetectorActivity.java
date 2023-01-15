@@ -153,7 +153,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         extractor = new FeatureExtract(getAssets(),
                          "feature_map.tflite",
                              FEATURE_INPUT_SIZE,
-                          2880);
+                          144);
 
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
@@ -512,8 +512,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             case R.id.model_speed:
                 model_name = "fast";
                 modelSelect = "yolo-lite-fp16.tflite";
-                output_shape = new int[]{ 6300, 6300 };
-                input_size = 320;
+                output_shape = new int[]{ 3087, 3087 };
+                input_size = 224;
                 is_tiny = true;
 
                 try {
