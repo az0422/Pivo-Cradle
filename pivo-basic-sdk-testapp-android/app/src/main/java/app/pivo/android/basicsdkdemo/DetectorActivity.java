@@ -113,7 +113,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private BorderedText borderedText;
 
     private int maxSaveDetections = 50;
-    private int FEATURE_INPUT_SIZE = 96;
+    private int FEATURE_INPUT_SIZE = 32;
 
     @Override
     public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -153,7 +153,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         extractor = new FeatureExtract(getAssets(),
                          "feature_map.tflite",
                              FEATURE_INPUT_SIZE,
-                          144);
+                512);
 
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
@@ -383,7 +383,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             float[] feature_map = extractor.getFeature(bitmap_image);
 
-            double maxSimular = 0.75f;
+            double maxSimular = 0.995f;
             String selectId = "";
 
             for (Map<String, Object[]> prevHistogram : savedDetectionsHistogram) {

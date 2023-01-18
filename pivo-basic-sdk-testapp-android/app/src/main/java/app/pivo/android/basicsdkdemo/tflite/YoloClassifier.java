@@ -38,8 +38,6 @@ public class YoloClassifier implements Classifier {
     private int CHANNELS = 4;
     private int[] intValues;
 
-    private int output_box;
-
     public YoloClassifier(final AssetManager assetManager,
                           final String modelFilename,
                           final String labelFilename,
@@ -77,8 +75,6 @@ public class YoloClassifier implements Classifier {
         imgData = ByteBuffer.allocateDirect(1 * INPUT_SIZE * INPUT_SIZE * 3 * CHANNELS);
         imgData.order(ByteOrder.nativeOrder());
         intValues = new int[INPUT_SIZE * INPUT_SIZE];
-
-        output_box = (int) ((Math.pow((input_size / 32), 2) + Math.pow((input_size / 16), 2) + Math.pow((input_size / 8), 2)) * 3);
     }
 
     protected float mNmsThresh = 0.6f;
