@@ -113,7 +113,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private BorderedText borderedText;
 
     private int maxSaveDetections = 50;
-    private int FEATURE_INPUT_SIZE = 32;
+    private int FEATURE_INPUT_SIZE = 320;
 
     @Override
     public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -153,7 +153,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         extractor = new FeatureExtract(getAssets(),
                          "feature_map.tflite",
                              FEATURE_INPUT_SIZE,
-                512);
+                12800);
 
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
@@ -238,7 +238,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                         List<Classifier.Recognition> temp = new ArrayList<>();
                         try {
                             temp = detector.recognizeImage(croppedBitmap);
-                            temp = filter(croppedBitmap, temp);
+                            temp = filter(rgbFrameBitmap, temp);
                             //    previous = temp;
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -374,7 +374,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             // 인식 된 부분의 ROI 영역 추출
             RectF roi_ = detections.get(i).getLocation();
-            Rect roi_area = new Rect((int) roi_.left, (int) roi_.top, (int) roi_.width(), (int) roi_.height());
+            Rect roi_area = new Rect((int) (roi_.left / TF_OD_API_INPUT_SIZE * bitmap.getWidth()),
+                                     (int) (roi_.top / TF_OD_API_INPUT_SIZE * bitmap.getHeight()),
+                                     (int) (roi_.width() / TF_OD_API_INPUT_SIZE * bitmap.getWidth()),
+                                     (int) (roi_.height() / TF_OD_API_INPUT_SIZE * bitmap.getHeight()));
             Mat image = original.submat(roi_area);
             Imgproc.resize(image, image, new org.opencv.core.Size(FEATURE_INPUT_SIZE, FEATURE_INPUT_SIZE), Imgproc.INTER_LINEAR);
 
