@@ -113,7 +113,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private BorderedText borderedText;
 
     private int maxSaveDetections = 50;
-    private int FEATURE_INPUT_SIZE = 320;
+    private int FEATURE_INPUT_SIZE = 128;
 
     @Override
     public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -153,7 +153,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         extractor = new FeatureExtract(getAssets(),
                          "feature_map.tflite",
                              FEATURE_INPUT_SIZE,
-                12800);
+                2048);
 
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
@@ -386,23 +386,26 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             float[] feature_map = extractor.getFeature(bitmap_image);
 
-            double maxSimular = 0.995f;
+            double maxSimular = 0.75;
             String selectId = "";
 
             for (Map<String, Object[]> prevHistogram : savedDetectionsHistogram) {
                 for (String key : prevHistogram.keySet()) {
                     float[] prev = (float[]) prevHistogram.get(key)[0];
                     String title = (String) prevHistogram.get(key)[1];
-                    double val = 0f;
+                    double val = 0;
 
                     if (!title.equals(detections.get(i).getTitle())) continue;
 
                     for (int j = 0; j < feature_map.length; j++) {
-                        double p = prev[j];
+                        double p = prev[j] ;
                         double h = feature_map[j];
+
                         val += (p > h ? h : p) / (p > h ? p : h);
                     }
                     val = val / feature_map.length;
+
+                    Log.i("val", "" + val);
 
                     // 유사도 기반으로 기존 ID 검색
                     if (val > maxSimular && Integer.parseInt(key) < minid) {
