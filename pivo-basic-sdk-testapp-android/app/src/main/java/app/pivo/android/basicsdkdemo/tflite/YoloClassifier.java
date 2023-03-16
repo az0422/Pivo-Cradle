@@ -224,6 +224,8 @@ public class YoloClassifier implements Classifier {
         outputMap.put(0, new float[1][OUTPUT_SHAPE[0]][5 + labels.size()]);
         Object[] inputArray = {byteBuffer};
 
+        Log.i("null reference", "" + outputMap + " " + inputArray);
+
         TFLITE.runForMultipleInputsOutputs(inputArray, outputMap);
 
         float[][][] out = (float[][][])outputMap.get(0);

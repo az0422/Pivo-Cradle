@@ -80,7 +80,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static int[] TF_OD_API_OUTPUT_SHAPE = {25200, 25200};
     private static final boolean TF_OD_API_IS_QUANTIZED = false;
     private static boolean is_tiny = false;
-    private static final String TF_OD_API_MODEL_FILE = "yolov5s-fp16.tflite";
+    private static final String TF_OD_API_MODEL_FILE = "yolov7-tiny-lite-csp-fp16.tflite";
 
     private static final String TF_OD_API_LABELS_FILE = "obj.names";
 
@@ -518,8 +518,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             case R.id.model_speed:
                 model_name = "fast";
                 modelSelect = "yolo-lite-fp16.tflite";
-                output_shape = new int[]{ 3087, 3087 };
-                input_size = 224;
+                output_shape = new int[]{ 1000, 1000 };
+                input_size = 320;
                 is_tiny = true;
 
                 try {
