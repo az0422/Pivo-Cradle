@@ -238,7 +238,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                         List<Classifier.Recognition> temp = new ArrayList<>();
                         try {
                             temp = detector.recognizeImage(croppedBitmap);
-                            temp = filter(rgbFrameBitmap, temp);
+                            //temp = filter(rgbFrameBitmap, temp);
                             //    previous = temp;
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -517,8 +517,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             case R.id.model_speed:
                 model_name = "fast";
-                modelSelect = "yolo-lite-fp16.tflite";
-                output_shape = new int[]{ 1000, 1000 };
+                modelSelect = "yolov8s-320_float16.tflite";
+                output_shape = new int[]{ 2100, 2100 };
                 input_size = 320;
                 is_tiny = true;
 
@@ -544,7 +544,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                             TF_OD_API_IS_QUANTIZED,
                             input_size,
                             output_shape,
-                            5);
+                            8);
 
                     detector.setContext(this);
 

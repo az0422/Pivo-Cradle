@@ -287,7 +287,7 @@ public class YoloClassifier implements Classifier {
         Map<Integer, Object> outputMap = new HashMap<>();
 
         //outputMap.put(0, ByteBuffer.allocateDirect(1 * OUTPUT_SHAPE[0] * (labels.size() + 5) * 4));
-        outputMap.put(0, new float[1][OUTPUT_SHAPE[0]][4 + labels.size()]);
+        outputMap.put(0, new float[1][4 + labels.size()][OUTPUT_SHAPE[0]]);
         Object[] inputArray = {byteBuffer};
 
         Log.i("null reference", "" + outputMap + " " + inputArray);
@@ -304,7 +304,7 @@ public class YoloClassifier implements Classifier {
             final float[] classes = new float[labels.size()];
 
             for (int c = 0; c < labels.size(); c++) {
-                classes[c] = out[0][i][5 + c];
+                classes[c] = out[0][4 + c][i];
             }
 
             for (int c = 0; c < labels.size(); c++) {
@@ -316,11 +316,11 @@ public class YoloClassifier implements Classifier {
 
             final float confidenceInClass = maxClass;
             if (confidenceInClass > getObjThresh()) {
-                final float xPos = out[0][i][0] * INPUT_SIZE;
-                final float yPos = out[0][i][1] * INPUT_SIZE;
+                final float xPos = out[0][0][i];
+                final float yPos = out[0][1][i];
 
-                final float w = out[0][i][2] * INPUT_SIZE;
-                final float h = out[0][i][3] * INPUT_SIZE;
+                final float w = out[0][2][i];
+                final float h = out[0][3][i];
                 Log.d("YoloV8Classifier",
                         Float.toString(xPos) + ',' + yPos + ',' + w + ',' + h);
 
@@ -417,6 +417,10 @@ public class YoloClassifier implements Classifier {
         else if (YOLO_VERSION == 5) {
             ByteBuffer byteBuffer = convertBitmapToByteBuffer(bitmap);
             return recognizeImageV5(byteBuffer, bitmap);
+        }
+        else if (YOLO_VERSION == 8) {
+            ByteBuffer byteBuffer = convertBitmapToByteBuffer(bitmap);
+            return recognizeImageV8(byteBuffer, bitmap);
         }
 
         return null;
