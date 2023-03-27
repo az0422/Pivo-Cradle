@@ -28,7 +28,7 @@ import app.pivo.android.basicsdkdemo.env.Utils;
 public class YoloClassifier implements Classifier {
     private int INPUT_SIZE;
     private int YOLO_VERSION;
-    private int[] OUTPUT_SHAPE;
+    private int OUTPUT_SHAPE;
     private Vector<String> labels = new Vector<>();
 
     private int NUM_THREADS = 4;
@@ -43,7 +43,7 @@ public class YoloClassifier implements Classifier {
                           final String labelFilename,
                           final boolean isQuantized,
                           final int input_size,
-                          final int[] output_shape,
+                          final int output_shape,
                           final int yolo_version) throws IOException {
 
         INPUT_SIZE = input_size;
@@ -175,12 +175,12 @@ public class YoloClassifier implements Classifier {
     private ArrayList<Recognition> recognizeImageV4(ByteBuffer byteBuffer, Bitmap bitmap) {
         ArrayList<Recognition> detections = new ArrayList<Recognition>();
         Map<Integer, Object> outputMap = new HashMap<>();
-        outputMap.put(0, new float[1][OUTPUT_SHAPE[0]][4]);
-        outputMap.put(1, new float[1][OUTPUT_SHAPE[1]][labels.size()]);
+        outputMap.put(0, new float[1][OUTPUT_SHAPE][4]);
+        outputMap.put(1, new float[1][OUTPUT_SHAPE][labels.size()]);
         Object[] inputArray = {byteBuffer};
         TFLITE.runForMultipleInputsOutputs(inputArray, outputMap);
 
-        int gridWidth = OUTPUT_SHAPE[0];
+        int gridWidth = OUTPUT_SHAPE;
         float[][][] bboxes = (float [][][]) outputMap.get(0);
         float[][][] out_score = (float[][][]) outputMap.get(1);
 
@@ -221,7 +221,7 @@ public class YoloClassifier implements Classifier {
         Map<Integer, Object> outputMap = new HashMap<>();
 
         //outputMap.put(0, ByteBuffer.allocateDirect(1 * OUTPUT_SHAPE[0] * (labels.size() + 5) * 4));
-        outputMap.put(0, new float[1][OUTPUT_SHAPE[0]][5 + labels.size()]);
+        outputMap.put(0, new float[1][OUTPUT_SHAPE][5 + labels.size()]);
         Object[] inputArray = {byteBuffer};
 
         Log.i("null reference", "" + outputMap + " " + inputArray);
@@ -239,7 +239,7 @@ public class YoloClassifier implements Classifier {
 //            }
 //        }
 
-        for (int i = 0; i < OUTPUT_SHAPE[0]; i++) {
+        for (int i = 0; i < OUTPUT_SHAPE; i++) {
             final int offset = 0;
             final float confidence = out[0][i][4];
             int detectedClass = -1;
@@ -287,7 +287,7 @@ public class YoloClassifier implements Classifier {
         Map<Integer, Object> outputMap = new HashMap<>();
 
         //outputMap.put(0, ByteBuffer.allocateDirect(1 * OUTPUT_SHAPE[0] * (labels.size() + 5) * 4));
-        outputMap.put(0, new float[1][4 + labels.size()][OUTPUT_SHAPE[0]]);
+        outputMap.put(0, new float[1][4 + labels.size()][OUTPUT_SHAPE]);
         Object[] inputArray = {byteBuffer};
 
         Log.i("null reference", "" + outputMap + " " + inputArray);
@@ -296,7 +296,7 @@ public class YoloClassifier implements Classifier {
 
         float[][][] out = (float[][][])outputMap.get(0);
 
-        for (int i = 0; i < OUTPUT_SHAPE[0]; i++) {
+        for (int i = 0; i < OUTPUT_SHAPE; i++) {
             final int offset = 0;
             int detectedClass = -1;
             float maxClass = 0;
@@ -343,7 +343,7 @@ public class YoloClassifier implements Classifier {
         Map<Integer, Object> outputMap = new HashMap<>();
 
         //outputMap.put(0, ByteBuffer.allocateDirect(1 * OUTPUT_SHAPE[0] * (labels.size() + 5) * 4));
-        outputMap.put(0, new float[1][OUTPUT_SHAPE[0] / 2][5 + labels.size()]);
+        outputMap.put(0, new float[1][OUTPUT_SHAPE / 2][5 + labels.size()]);
         Object[] inputArray = {byteBuffer};
 
         TFLITE.runForMultipleInputsOutputs(inputArray, outputMap);
@@ -359,7 +359,7 @@ public class YoloClassifier implements Classifier {
 //            }
 //        }
 
-        for (int i = 0; i < OUTPUT_SHAPE[0]; i++) {
+        for (int i = 0; i < OUTPUT_SHAPE; i++) {
             final int offset = 0;
             final float confidence = out[0][i][4];
             int detectedClass = -1;
