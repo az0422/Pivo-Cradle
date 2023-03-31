@@ -161,7 +161,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         extractor = new FeatureExtract(getAssets(),
                          "feature_map.tflite",
                              FEATURE_INPUT_SIZE,
-                768 * 2);
+                320);
 
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
@@ -394,26 +394,41 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             float[] feature_map = extractor.getFeature(bitmap_image);
 
-            double maxSimular = 0.75;
+            double maxSimular = 0.50;
             String selectId = "";
 
             for (Map<String, Object[]> prevHistogram : savedDetectionsHistogram) {
                 for (String key : prevHistogram.keySet()) {
                     float[] prev = (float[]) prevHistogram.get(key)[0];
                     String title = (String) prevHistogram.get(key)[1];
+                    long val_temp = 0;
                     double val = 0;
 
                     if (!title.equals(detections.get(i).getTitle())) continue;
 
                     for (int j = 0; j < feature_map.length; j++) {
-                        double p = prev[j] ;
+                        double p = prev[j];
                         double h = feature_map[j];
+                        double min, max;
 
-                        val += (p > h ? h : p) / (p > h ? p : h);
+                        if (p < h) {
+                            min = p;
+                            max = h;
+                        } else {
+                            min = h;
+                            max = p;
+                        }
+
+                        if (max <= 0) {
+                            val_temp += 100;
+                        } else {
+                            val_temp += min / max * 100;
+                        }
+
                     }
-                    val = val / feature_map.length;
+                    val = val_temp / (double) feature_map.length / 100;
 
-                    Log.i("val", "" + val);
+                    Log.i("val", "" + val + " " + val_temp);
 
                     // 유사도 기반으로 기존 ID 검색
                     if (val > maxSimular && Integer.parseInt(key) < minid) {
