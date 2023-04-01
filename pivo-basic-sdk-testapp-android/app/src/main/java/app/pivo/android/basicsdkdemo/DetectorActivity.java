@@ -80,11 +80,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private static int TF_OD_API_INPUT_SIZE = 640;
     private static int TF_OD_API_INPUT_SIZE_ACC = 640;
-    private static final String TF_OD_API_MODEL_FILE = "yolov8s-640_float16.tflite";
+    private static final String TF_OD_API_MODEL_FILE = "yolov8n-640_float16.tflite";
     private static int TF_OD_API_OUTPUT_SHAPE = 8400;
 
-    private static final String TF_OD_API_MODEL_FILE_FAST = "yolov8s-320_float16.tflite";
-    private static int TF_OD_API_OUTPUT_SHAPE_FAST = 2100;
+    private static final String TF_OD_API_MODEL_FILE_FAST = "yolo-lite-320_float16.tflite";
+    private static int TF_OD_API_OUTPUT_SHAPE_FAST = 500;
     private static int TF_OD_API_INPUT_SIZE_FAST = 320;
 
     private static float CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
@@ -161,7 +161,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         extractor = new FeatureExtract(getAssets(),
                          "feature_map.tflite",
                              FEATURE_INPUT_SIZE,
-                320);
+                768);
 
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
@@ -367,6 +367,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private Vector<Map<String, Object[]>> savedDetectionsHistogram = new Vector<>();
     private int idSequence = 0;
+    private Map<String, Object[]> featureMaps = new HashMap<>();
 
     private int file_sequence = 0;
 
@@ -394,63 +395,40 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             float[] feature_map = extractor.getFeature(bitmap_image);
 
-            double maxSimular = 0.50;
+            double maxSimular = 0.75;
             String selectId = "";
 
-            for (Map<String, Object[]> prevHistogram : savedDetectionsHistogram) {
-                for (String key : prevHistogram.keySet()) {
-                    float[] prev = (float[]) prevHistogram.get(key)[0];
-                    String title = (String) prevHistogram.get(key)[1];
-                    long val_temp = 0;
-                    double val = 0;
+            for (String key : featureMaps.keySet()) {
+                float[] prev = (float[]) featureMaps.get(key)[0];
+                String title = (String) featureMaps.get(key)[1];
+                long val_temp = 0;
+                double val;
 
-                    if (!title.equals(detections.get(i).getTitle())) continue;
+                if (!title.equals(detections.get(i).getTitle())) continue;
 
-                    for (int j = 0; j < feature_map.length; j++) {
-                        double p = prev[j];
-                        double h = feature_map[j];
-                        double min, max;
+                for (int j = 0; j < feature_map.length; j++) {
+                    double p = prev[j];
+                    double h = feature_map[j];
 
-                        if (p < h) {
-                            min = p;
-                            max = h;
-                        } else {
-                            min = h;
-                            max = p;
-                        }
+                    val_temp += (p == 0 && h == 0) ? 100 : (long)(Math.min(p, h) / Math.max(p, h) * 100);
+                }
+                val = val_temp / (double) feature_map.length / 100;
 
-                        if (max <= 0) {
-                            val_temp += 100;
-                        } else {
-                            val_temp += min / max * 100;
-                        }
-
-                    }
-                    val = val_temp / (double) feature_map.length / 100;
-
-                    Log.i("val", "" + val + " " + val_temp);
-
-                    // 유사도 기반으로 기존 ID 검색
-                    if (val > maxSimular && Integer.parseInt(key) < minid) {
-                        maxSimular = val;
-                        selectId = key;
-                        minid = Integer.parseInt(key);
-                    }
+                // 유사도 기반으로 기존 ID 검색
+                if (val > maxSimular && Integer.parseInt(key) < minid) {
+                    maxSimular = val;
+                    selectId = key;
+                    minid = Integer.parseInt(key);
                 }
             }
 
             // ID가 검색 되지 않은 경우 다음 번호로 ID 할당
             if ("".equals(selectId)) {
                 selectId = "" + idSequence++;
+                featureMaps.put(selectId, new Object[]{ feature_map, detections.get(i).getTitle() });
             }
             detections.get(i).setId(selectId);
-
-            histograms.put(selectId, new Object[]{ feature_map, detections.get(i).getTitle() });
         }
-        if (savedDetectionsHistogram.size() > maxSaveDetections) {
-            savedDetectionsHistogram.remove(0);
-        }
-        savedDetectionsHistogram.add(histograms);
 
         return detections;
     }
