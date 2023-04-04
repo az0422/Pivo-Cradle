@@ -77,7 +77,7 @@ public class YoloClassifier implements Classifier {
         intValues = new int[INPUT_SIZE * INPUT_SIZE];
     }
 
-    protected float mNmsThresh = 0.6f;
+    protected float mNmsThresh = 0.7f;
 
     protected float box_union(RectF a, RectF b) {
         float i = box_intersection(a, b);
@@ -453,6 +453,6 @@ public class YoloClassifier implements Classifier {
 
     @Override
     public float getObjThresh() {
-        return 0.5f;
+        return 0.3f;
     }
 }

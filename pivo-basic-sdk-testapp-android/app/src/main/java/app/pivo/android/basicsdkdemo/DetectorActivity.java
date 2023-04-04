@@ -80,10 +80,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private static int TF_OD_API_INPUT_SIZE = 640;
     private static int TF_OD_API_INPUT_SIZE_ACC = 640;
-    private static final String TF_OD_API_MODEL_FILE = "yolov8n-640_float16.tflite";
+    private static final String TF_OD_API_MODEL_FILE = "yolov7-tiny-lite-640_float16.tflite";
     private static int TF_OD_API_OUTPUT_SHAPE = 8400;
 
-    private static final String TF_OD_API_MODEL_FILE_FAST = "yolo-lite-320_float16.tflite";
+    private static final String TF_OD_API_MODEL_FILE_FAST = "yolo-lite_float16.tflite";
     private static int TF_OD_API_OUTPUT_SHAPE_FAST = 500;
     private static int TF_OD_API_INPUT_SIZE_FAST = 320;
 
