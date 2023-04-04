@@ -78,13 +78,13 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static final boolean TF_OD_API_IS_QUANTIZED = false;
     private static boolean is_tiny = false;
 
-    private static int TF_OD_API_INPUT_SIZE = 640;
-    private static int TF_OD_API_INPUT_SIZE_ACC = 640;
-    private static final String TF_OD_API_MODEL_FILE = "yolov7-tiny-lite-640_float16.tflite";
-    private static int TF_OD_API_OUTPUT_SHAPE = 8400;
+    private static int TF_OD_API_INPUT_SIZE = 320;
+    private static int TF_OD_API_INPUT_SIZE_ACC = 320;
+    private static final String TF_OD_API_MODEL_FILE = "yolov8s-320_float16.tflite";
+    private static int TF_OD_API_OUTPUT_SHAPE = 2100;
 
-    private static final String TF_OD_API_MODEL_FILE_FAST = "yolo-lite_float16.tflite";
-    private static int TF_OD_API_OUTPUT_SHAPE_FAST = 500;
+    private static final String TF_OD_API_MODEL_FILE_FAST = "best_float16.tflite";
+    private static int TF_OD_API_OUTPUT_SHAPE_FAST = 2100;
     private static int TF_OD_API_INPUT_SIZE_FAST = 320;
 
     private static float CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
