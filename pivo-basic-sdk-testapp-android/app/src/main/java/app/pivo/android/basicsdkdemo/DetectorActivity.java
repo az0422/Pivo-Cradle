@@ -161,7 +161,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         extractor = new FeatureExtract(getAssets(),
                          "feature_map.tflite",
                              FEATURE_INPUT_SIZE,
-                8192);
+                2048);
 
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
@@ -397,6 +397,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             double maxSimular = 0.50;
             String selectId = "";
+            String simularity_temp = "";
 
             for (String key : featureMaps.keySet()) {
                 float[] prev = (float[]) featureMaps.get(key)[0];
@@ -413,12 +414,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     val_temp += (p == 0 && h == 0) ? 100 : (long)(Math.min(p, h) / Math.max(p, h) * 100);
                 }
                 val = val_temp / (double) feature_map.length / 100;
+                Log.i("Simularity", "" + val);
 
                 // 유사도 기반으로 기존 ID 검색
                 if (val > maxSimular && Integer.parseInt(key) < minid) {
                     maxSimular = val;
                     selectId = key;
                     minid = Integer.parseInt(key);
+                    simularity_temp = "" + val;
                 }
             }
 
@@ -427,7 +430,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 selectId = "" + idSequence++;
                 featureMaps.put(selectId, new Object[]{ feature_map, detections.get(i).getTitle() });
             }
-            detections.get(i).setId(selectId);
+            detections.get(i).setId(selectId + "S: " + simularity_temp);
         }
 
         return detections;
