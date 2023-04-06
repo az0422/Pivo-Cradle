@@ -83,8 +83,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static final String TF_OD_API_MODEL_FILE = "yolov8s-320_float16.tflite";
     private static int TF_OD_API_OUTPUT_SHAPE = 2100;
 
-    private static final String TF_OD_API_MODEL_FILE_FAST = "best_float16.tflite";
-    private static int TF_OD_API_OUTPUT_SHAPE_FAST = 2100;
+    private static final String TF_OD_API_MODEL_FILE_FAST = "yolo-lite-320_float16.tflite";
+    private static int TF_OD_API_OUTPUT_SHAPE_FAST = 500;
     private static int TF_OD_API_INPUT_SIZE_FAST = 320;
 
     private static float CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
@@ -161,7 +161,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         extractor = new FeatureExtract(getAssets(),
                          "feature_map.tflite",
                              FEATURE_INPUT_SIZE,
-                768);
+                8192);
 
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
@@ -395,7 +395,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             float[] feature_map = extractor.getFeature(bitmap_image);
 
-            double maxSimular = 0.75;
+            double maxSimular = 0.50;
             String selectId = "";
 
             for (String key : featureMaps.keySet()) {
