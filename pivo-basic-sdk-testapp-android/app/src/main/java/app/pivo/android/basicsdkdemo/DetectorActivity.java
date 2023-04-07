@@ -78,10 +78,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static final boolean TF_OD_API_IS_QUANTIZED = false;
     private static boolean is_tiny = false;
 
-    private static int TF_OD_API_INPUT_SIZE = 320;
-    private static int TF_OD_API_INPUT_SIZE_ACC = 320;
-    private static final String TF_OD_API_MODEL_FILE = "yolov8s-320_float16.tflite";
-    private static int TF_OD_API_OUTPUT_SHAPE = 2100;
+    private static int TF_OD_API_INPUT_SIZE = 640;
+    private static int TF_OD_API_INPUT_SIZE_ACC = 640;
+    private static final String TF_OD_API_MODEL_FILE = "yolo-lite-acc-640_float16.tflite";
+    private static int TF_OD_API_OUTPUT_SHAPE = 8400;
 
     private static final String TF_OD_API_MODEL_FILE_FAST = "yolo-lite-320_float16.tflite";
     private static int TF_OD_API_OUTPUT_SHAPE_FAST = 500;
@@ -93,7 +93,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static final String TF_OD_API_LABELS_FILE = "obj.names";
 
     private static final DetectorMode MODE = DetectorMode.TF_OD_API;
-    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.3f;
+    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.45f;
     private static final boolean MAINTAIN_ASPECT = false;
     private static final Size DESIRED_PREVIEW_SIZE = new Size(1920, 1080);
     private static final boolean SAVE_PREVIEW_BITMAP = false;
@@ -389,6 +389,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         Map<String, Object[]> histograms = new HashMap<>();
 
         for (int i = 0; i < detections.size(); i++) {
+            if (detections.get(i).getConfidence() < MINIMUM_CONFIDENCE_TF_OD_API) continue;
+
             int minid = 0x7FFFFFFF;
 
             Mat original = new Mat();

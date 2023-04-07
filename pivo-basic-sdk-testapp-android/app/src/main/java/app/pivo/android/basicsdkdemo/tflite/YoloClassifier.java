@@ -453,6 +453,6 @@ public class YoloClassifier implements Classifier {
 
     @Override
     public float getObjThresh() {
-        return 0.3f;
+        return 0.45f;
     }
 }
