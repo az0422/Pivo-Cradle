@@ -365,11 +365,24 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         }
     }
 
-    private Vector<Map<String, Object[]>> savedDetectionsHistogram = new Vector<>();
     private int idSequence = 0;
     private Map<String, Object[]> featureMaps = new HashMap<>();
 
-    private int file_sequence = 0;
+    public double getSimilarity(float[] featureMap1, float[] featureMap2) {
+        if (featureMap1.length != featureMap2.length) {
+            throw new IllegalArgumentException("Feature maps have different lengths");
+        }
+        double dotProduct = 0;
+        double mag1 = 0;
+        double mag2 = 0;
+        for (int i = 0; i < featureMap1.length; i++) {
+            dotProduct += featureMap1[i] * featureMap2[i];
+            mag1 += featureMap1[i] * featureMap1[i];
+            mag2 += featureMap2[i] * featureMap2[i];
+        }
+        double similarity = dotProduct / (Math.sqrt(mag1) * Math.sqrt(mag2));
+        return similarity;
+    }
 
     private List<Classifier.Recognition> filter(Bitmap bitmap, List<Classifier.Recognition> detections) {
         List<Classifier.Recognition> results = new ArrayList<>();
@@ -407,14 +420,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                 if (!title.equals(detections.get(i).getTitle())) continue;
 
-                for (int j = 0; j < feature_map.length; j++) {
-                    double p = prev[j];
-                    double h = feature_map[j];
-
-                    val_temp += (p == 0 && h == 0) ? 100 : (long)(Math.min(p, h) / Math.max(p, h) * 100);
-                }
-                val = val_temp / (double) feature_map.length / 100;
-                Log.i("Simularity", "" + val);
+                val = getSimilarity(prev, feature_map);
 
                 // 유사도 기반으로 기존 ID 검색
                 if (val > maxSimular && Integer.parseInt(key) < minid) {
@@ -430,7 +436,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 selectId = "" + idSequence++;
                 featureMaps.put(selectId, new Object[]{ feature_map, detections.get(i).getTitle() });
             }
-            detections.get(i).setId(selectId + "S: " + simularity_temp);
+            detections.get(i).setId(selectId); // + "S: " + simularity_temp);
         }
 
         return detections;
