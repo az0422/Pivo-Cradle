@@ -212,6 +212,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private List<Classifier.Recognition> previous;
 
+    Bitmap input_frame;
+
     @Override
     protected void processImage() {
         ++timestamp;
@@ -227,6 +229,12 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         LOGGER.i("Preparing image " + currTimestamp + " for detection in bg thread.");
 
         rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
+
+        Mat resize = new Mat();
+        bitmapToMat(rgbFrameBitmap, resize);
+        Imgproc.resize(resize, resize, new org.opencv.core.Size(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE));
+        input_frame = Bitmap.createBitmap(resize.width(), resize.height(), Config.ARGB_8888);
+        bitmapToMat(input_frame, resize);
 
         readyForNextImage();
 
@@ -245,7 +253,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                         List<Classifier.Recognition> temp = new ArrayList<>();
                         try {
-                            temp = detector.recognizeImage(croppedBitmap);
+
+                            temp = detector.recognizeImage(input_frame);
                             temp = filter(rgbFrameBitmap, temp);
                             //    previous = temp;
                         } catch (Exception e) {
@@ -381,7 +390,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             mag2 += featureMap2[i] * featureMap2[i];
         }
         double similarity = dotProduct / (Math.sqrt(mag1) * Math.sqrt(mag2));
-        return similarity;
+        return similarity < 0 ? 0 : similarity;
     }
 
     private List<Classifier.Recognition> filter(Bitmap bitmap, List<Classifier.Recognition> detections) {
