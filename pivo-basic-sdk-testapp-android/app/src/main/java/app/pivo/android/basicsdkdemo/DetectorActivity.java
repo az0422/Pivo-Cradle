@@ -207,6 +207,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     }
 
     Bitmap input_frame;
+    Mat resize = new Mat();
+    Point center = new Point(resize.height() / 2, resize.width() / 2);
+    Mat rotateMatrix = Imgproc.getRotationMatrix2D(center, sensorOrientation, 1.0);
 
     @Override
     protected void processImage() {
@@ -224,12 +227,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
 
-        Mat resize = new Mat();
+        resize = new Mat();
         Utils.bitmapToMat(rgbFrameBitmap, resize);
         Imgproc.resize(resize, resize, new org.opencv.core.Size(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE));
-
-        Point center = new Point(resize.height() / 2, resize.width() / 2);
-        Mat rotateMatrix = Imgproc.getRotationMatrix2D(center, sensorOrientation, 1.0);
 
         Imgproc.warpAffine(resize, resize, rotateMatrix, new org.opencv.core.Size(resize.height(), resize.width()));
         input_frame = Bitmap.createBitmap(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE, Config.ARGB_8888);
