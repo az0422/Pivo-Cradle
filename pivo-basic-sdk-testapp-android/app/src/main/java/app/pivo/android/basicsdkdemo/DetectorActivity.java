@@ -43,12 +43,8 @@ import android.widget.Toast;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
 import org.opencv.core.Rect;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
@@ -82,19 +78,21 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static final boolean TF_OD_API_IS_QUANTIZED = false;
     private static boolean is_tiny = false;
 
+    private static int TF_OD_API_INPUT_SIZE = 640;
     private static int TF_OD_API_INPUT_SIZE_ACC = 640;
-    private static final String TF_OD_API_MODEL_FILE = "yolo-lite-acc-640_float16.tflite";
-    private static int TF_OD_API_OUTPUT_SHAPE = 8400;
+    private static final String TF_OD_API_MODEL_FILE = "yolo-lite-640_float16.tflite";
+    private static int TF_OD_API_OUTPUT_SHAPE = 2000;
 
     private static final String TF_OD_API_MODEL_FILE_FAST = "yolo-lite-320_float16.tflite";
     private static int TF_OD_API_OUTPUT_SHAPE_FAST = 500;
     private static int TF_OD_API_INPUT_SIZE_FAST = 320;
 
-    private static int TF_OD_API_INPUT_SIZE = TF_OD_API_INPUT_SIZE_ACC;
     private static float CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
+
 
     private static final String TF_OD_API_LABELS_FILE = "obj.names";
 
+    private static final DetectorMode MODE = DetectorMode.TF_OD_API;
     private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.45f;
     private static final boolean MAINTAIN_ASPECT = false;
     private static final Size DESIRED_PREVIEW_SIZE = new Size(1920, 1080);
@@ -107,6 +105,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private long lastProcessingTimeMs;
     private Bitmap rgbFrameBitmap = null;
+    private Bitmap croppedBitmap = null;
+    private Bitmap cropCopyBitmap = null;
+
     private boolean computingDetection = false;
 
     private long timestamp = 0;
@@ -118,6 +119,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private BorderedText borderedText;
 
+    private int maxSaveDetections = 50;
     private int FEATURE_INPUT_SIZE = 128;
 
     @Override
@@ -163,11 +165,12 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
 
-        sensorOrientation = getScreenOrientation();
+        sensorOrientation = rotation - getScreenOrientation();
         LOGGER.i("Camera orientation relative to screen canvas: %d", sensorOrientation);
 
         LOGGER.i("Initializing at size %dx%d", previewWidth, previewHeight);
         rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Config.ARGB_8888);
+        croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Config.ARGB_8888);
 
         frameToCropTransform =
                 ImageUtils.getTransformationMatrix(
@@ -206,11 +209,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         findViewById(R.id.model_speed).setOnClickListener(this);
     }
 
-    Bitmap input_frame;
-    Mat resize = new Mat();
-    Point center = new Point(resize.height() / 2, resize.width() / 2);
-    Mat rotateMatrix = Imgproc.getRotationMatrix2D(center, sensorOrientation, 1.0);
-
     @Override
     protected void processImage() {
         ++timestamp;
@@ -227,13 +225,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
 
-        resize = new Mat();
-        Utils.bitmapToMat(rgbFrameBitmap, resize);
+        Mat resize = new Mat();
+        bitmapToMat(rgbFrameBitmap, resize);
         Imgproc.resize(resize, resize, new org.opencv.core.Size(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE));
-
-        Imgproc.warpAffine(resize, resize, rotateMatrix, new org.opencv.core.Size(resize.height(), resize.width()));
-        input_frame = Bitmap.createBitmap(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE, Config.ARGB_8888);
-        Utils.matToBitmap(resize, input_frame);
+        Bitmap input_frame = Bitmap.createBitmap(resize.width(), resize.height(), Config.ARGB_8888);
+        bitmapToMat(input_frame, resize);
 
         readyForNextImage();
 
@@ -246,12 +242,13 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                         List<Classifier.Recognition> temp = new ArrayList<>();
                         try {
+
                             temp = detector.recognizeImage(input_frame);
                             temp = filter(rgbFrameBitmap, temp);
+                            //    previous = temp;
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-
                         List<Classifier.Recognition> results;
 
                         if (selectedObject.equals("all")) {
@@ -263,7 +260,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                                 if (record.getTitle().equals(selectedObject)) results.add(record);
                             }
                         }
-
                         if (results.size() > 0) {
                             float position = results.get(0).getLocation().centerX();
 
@@ -290,13 +286,30 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                         Log.e("CHECK", "run: " + results.size());
 
+                        cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
+                        final Canvas canvas = new Canvas(cropCopyBitmap);
+                        final Paint paint = new Paint();
+                        paint.setColor(Color.RED);
+                        paint.setStyle(Style.STROKE);
+                        paint.setStrokeWidth(1.0f);
+
+                        float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
+                        switch (MODE) {
+                            case TF_OD_API:
+                                minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
+                                break;
+                        }
+
                         final List<Classifier.Recognition> mappedRecognitions =
                                 new LinkedList<Classifier.Recognition>();
 
                         for (final Classifier.Recognition result : results) {
-                            RectF location = result.getLocation();
-                            if (location != null) {
+                            final RectF location = result.getLocation();
+                            if (location != null && result.getConfidence() >= minimumConfidence) {
+                                canvas.drawRect(location, paint);
+
                                 cropToFrameTransform.mapRect(location);
+
                                 result.setLocation(location);
                                 mappedRecognitions.add(result);
                             }
@@ -312,7 +325,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                                     @Override
                                     public void run() {
                                         showFrameInfo(previewWidth + "x" + previewHeight);
-                                        showCropInfo(TF_OD_API_INPUT_SIZE + "x" + TF_OD_API_INPUT_SIZE);
+                                        showCropInfo(cropCopyBitmap.getWidth() + "x" + cropCopyBitmap.getHeight());
                                         showInference(lastProcessingTimeMs + "ms");
                                     }
                                 });
@@ -368,20 +381,23 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     }
 
     private List<Classifier.Recognition> filter(Bitmap bitmap, List<Classifier.Recognition> detections) {
-        Mat original = new Mat();
-        bitmapToMat(bitmap, original);
+        List<Classifier.Recognition> results = new ArrayList<>();
+        Map<String, Object[]> histograms = new HashMap<>();
 
         for (int i = 0; i < detections.size(); i++) {
             if (detections.get(i).getConfidence() < MINIMUM_CONFIDENCE_TF_OD_API) continue;
 
+            int minid = 0x7FFFFFFF;
+
+            Mat original = new Mat();
+            bitmapToMat(bitmap, original);
+
             // 인식 된 부분의 ROI 영역 추출
             RectF roi_ = detections.get(i).getLocation();
-
             Rect roi_area = new Rect((int) (roi_.left / TF_OD_API_INPUT_SIZE * bitmap.getWidth()),
                                      (int) (roi_.top / TF_OD_API_INPUT_SIZE * bitmap.getHeight()),
                                      (int) (roi_.width() / TF_OD_API_INPUT_SIZE * bitmap.getWidth()),
                                      (int) (roi_.height() / TF_OD_API_INPUT_SIZE * bitmap.getHeight()));
-
             Mat image = original.submat(roi_area);
             Imgproc.resize(image, image, new org.opencv.core.Size(FEATURE_INPUT_SIZE, FEATURE_INPUT_SIZE), Imgproc.INTER_LINEAR);
 
@@ -405,9 +421,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 val = getSimilarity(prev, feature_map);
 
                 // 유사도 기반으로 기존 ID 검색
-                if (val > maxSimular) {
+                if (val > maxSimular && Integer.parseInt(key) < minid) {
                     maxSimular = val;
                     selectId = key;
+                    minid = Integer.parseInt(key);
                     simularity_temp = "" + val;
                 }
             }
@@ -458,6 +475,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     public void onClick(View v) {
         super.onClick(v);
 
+        YoloClassifier temp = detector;
+        Bitmap tempCropped = croppedBitmap;
+        Matrix tempFrame = frameToCropTransform;
+        Matrix tempCrop = cropToFrameTransform;
+
         switch(v.getId()) {
             case R.id.model_performance:
                 model_name = "accuracy";
@@ -468,6 +490,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                 try {
                     TF_OD_API_INPUT_SIZE = input_size;
+                    croppedBitmap = Bitmap.createBitmap(input_size, input_size, Config.ARGB_8888);
 
                     frameToCropTransform =
                             ImageUtils.getTransformationMatrix(
@@ -493,6 +516,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                 } catch (IOException e) {
                     e.printStackTrace();
+                    detector = temp;
+                    croppedBitmap = tempCropped;
+                    frameToCropTransform = tempFrame;
+                    cropToFrameTransform = tempCrop;
                 }
                 break;
 
@@ -505,6 +532,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                 try {
                     TF_OD_API_INPUT_SIZE = input_size;
+                    croppedBitmap = Bitmap.createBitmap(input_size, input_size, Config.ARGB_8888);
 
                     frameToCropTransform =
                             ImageUtils.getTransformationMatrix(
@@ -530,6 +558,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                 } catch (IOException e) {
                     e.printStackTrace();
+                    detector = temp;
+                    croppedBitmap = tempCropped;
+                    frameToCropTransform = tempFrame;
+                    cropToFrameTransform = tempCrop;
                 }
                 break;
 
