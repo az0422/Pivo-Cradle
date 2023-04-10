@@ -225,12 +225,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
 
-        Mat resize = new Mat();
-        bitmapToMat(rgbFrameBitmap, resize);
-        Imgproc.resize(resize, resize, new org.opencv.core.Size(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE));
-        Bitmap input_frame = Bitmap.createBitmap(resize.width(), resize.height(), Config.ARGB_8888);
-        bitmapToMat(input_frame, resize);
-
         readyForNextImage();
 
         runInBackground(
@@ -242,8 +236,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                         List<Classifier.Recognition> temp = new ArrayList<>();
                         try {
-
-                            temp = detector.recognizeImage(input_frame);
+                            temp = detector.recognizeImage(croppedBitmap);
                             temp = filter(rgbFrameBitmap, temp);
                             //    previous = temp;
                         } catch (Exception e) {
@@ -377,7 +370,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             mag2 += featureMap2[i] * featureMap2[i];
         }
         double similarity = dotProduct / (Math.sqrt(mag1) * Math.sqrt(mag2));
-        return similarity < 0 ? 0 : similarity;
+        return similarity;
     }
 
     private List<Classifier.Recognition> filter(Bitmap bitmap, List<Classifier.Recognition> detections) {
