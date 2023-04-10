@@ -43,7 +43,9 @@ import android.widget.Toast;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 
@@ -80,8 +82,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private static int TF_OD_API_INPUT_SIZE = 640;
     private static int TF_OD_API_INPUT_SIZE_ACC = 640;
-    private static final String TF_OD_API_MODEL_FILE = "yolo-lite-640_float16.tflite";
-    private static int TF_OD_API_OUTPUT_SHAPE = 2000;
+    private static final String TF_OD_API_MODEL_FILE = "yolo-lite-acc-640_float16.tflite";
+    private static int TF_OD_API_OUTPUT_SHAPE_ACC = 8400;
 
     private static final String TF_OD_API_MODEL_FILE_FAST = "yolo-lite-320_float16.tflite";
     private static int TF_OD_API_OUTPUT_SHAPE_FAST = 500;
@@ -101,25 +103,22 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private Integer sensorOrientation;
 
     private YoloClassifier detector;
+    private YoloClassifier detector_acc;
+    private YoloClassifier detector_fast;
     private FeatureExtract extractor;
 
     private long lastProcessingTimeMs;
     private Bitmap rgbFrameBitmap = null;
-    private Bitmap croppedBitmap = null;
-    private Bitmap cropCopyBitmap = null;
-
     private boolean computingDetection = false;
 
     private long timestamp = 0;
 
     private Matrix frameToCropTransform;
     private Matrix cropToFrameTransform;
-
     private MultiBoxTracker tracker;
 
     private BorderedText borderedText;
 
-    private int maxSaveDetections = 50;
     private int FEATURE_INPUT_SIZE = 128;
 
     @Override
@@ -135,16 +134,24 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         int cropSize = TF_OD_API_INPUT_SIZE;
 
         try {
-            detector =
-                    new YoloClassifier(
-                            getAssets(),
-                            TF_OD_API_MODEL_FILE,
-                            TF_OD_API_LABELS_FILE,
-                            TF_OD_API_IS_QUANTIZED,
-                            TF_OD_API_INPUT_SIZE,
-                            TF_OD_API_OUTPUT_SHAPE,
-                            8);
-            cropSize = TF_OD_API_INPUT_SIZE;
+            detector_acc = new YoloClassifier(
+                    getAssets(),
+                    TF_OD_API_MODEL_FILE,
+                    TF_OD_API_LABELS_FILE,
+                    TF_OD_API_IS_QUANTIZED,
+                    TF_OD_API_INPUT_SIZE_ACC,
+                    TF_OD_API_OUTPUT_SHAPE_ACC,
+                    8);
+            detector_fast = new YoloClassifier(
+                    getAssets(),
+                    TF_OD_API_MODEL_FILE_FAST,
+                    TF_OD_API_LABELS_FILE,
+                    TF_OD_API_IS_QUANTIZED,
+                    TF_OD_API_INPUT_SIZE_FAST,
+                    TF_OD_API_OUTPUT_SHAPE_FAST,
+                    8);
+
+            detector = detector_acc;
 
             detector.setContext(this);
         } catch (final IOException e) {
@@ -170,7 +177,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         LOGGER.i("Initializing at size %dx%d", previewWidth, previewHeight);
         rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Config.ARGB_8888);
-        croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Config.ARGB_8888);
 
         frameToCropTransform =
                 ImageUtils.getTransformationMatrix(
@@ -209,6 +215,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         findViewById(R.id.model_speed).setOnClickListener(this);
     }
 
+    Mat rotateMatrix = null;
+    int prev_size = 0;
+    Point center = null;
+    Bitmap input_bitmap;
+
     @Override
     protected void processImage() {
         ++timestamp;
@@ -225,6 +236,29 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
 
+        Mat resize = new Mat();
+        Utils.bitmapToMat(rgbFrameBitmap, resize);
+        Imgproc.resize(resize, resize, new org.opencv.core.Size(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE));
+
+        if (prev_size != TF_OD_API_INPUT_SIZE) {
+            center = new Point(resize.height() / 2, resize.width() / 2);
+            rotateMatrix = Imgproc.getRotationMatrix2D(center, sensorOrientation, 1.0);
+            input_bitmap = Bitmap.createBitmap(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE, Config.ARGB_8888);
+            prev_size = TF_OD_API_INPUT_SIZE;
+
+            frameToCropTransform =
+                    ImageUtils.getTransformationMatrix(
+                            previewWidth, previewHeight,
+                            TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE,
+                            sensorOrientation, MAINTAIN_ASPECT);
+
+            cropToFrameTransform = new Matrix();
+            frameToCropTransform.invert(cropToFrameTransform);
+        }
+
+        Imgproc.warpAffine(resize, resize, rotateMatrix, new org.opencv.core.Size(resize.height(), resize.width()));
+        Utils.matToBitmap(resize, input_bitmap);
+
         readyForNextImage();
 
         runInBackground(
@@ -236,7 +270,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                         List<Classifier.Recognition> temp = new ArrayList<>();
                         try {
-                            temp = detector.recognizeImage(croppedBitmap);
+                            temp = detector.recognizeImage(input_bitmap);
                             temp = filter(rgbFrameBitmap, temp);
                             //    previous = temp;
                         } catch (Exception e) {
@@ -279,13 +313,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                         Log.e("CHECK", "run: " + results.size());
 
-                        cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
-                        final Canvas canvas = new Canvas(cropCopyBitmap);
-                        final Paint paint = new Paint();
-                        paint.setColor(Color.RED);
-                        paint.setStyle(Style.STROKE);
-                        paint.setStrokeWidth(1.0f);
-
                         float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
                         switch (MODE) {
                             case TF_OD_API:
@@ -299,7 +326,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                         for (final Classifier.Recognition result : results) {
                             final RectF location = result.getLocation();
                             if (location != null && result.getConfidence() >= minimumConfidence) {
-                                canvas.drawRect(location, paint);
 
                                 cropToFrameTransform.mapRect(location);
 
@@ -318,7 +344,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                                     @Override
                                     public void run() {
                                         showFrameInfo(previewWidth + "x" + previewHeight);
-                                        showCropInfo(cropCopyBitmap.getWidth() + "x" + cropCopyBitmap.getHeight());
+                                        showCropInfo(TF_OD_API_INPUT_SIZE + "x" + TF_OD_API_INPUT_SIZE);
                                         showInference(lastProcessingTimeMs + "ms");
                                     }
                                 });
@@ -374,16 +400,13 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     }
 
     private List<Classifier.Recognition> filter(Bitmap bitmap, List<Classifier.Recognition> detections) {
-        List<Classifier.Recognition> results = new ArrayList<>();
-        Map<String, Object[]> histograms = new HashMap<>();
+        Mat original = new Mat();
+        bitmapToMat(bitmap, original);
 
         for (int i = 0; i < detections.size(); i++) {
             if (detections.get(i).getConfidence() < MINIMUM_CONFIDENCE_TF_OD_API) continue;
 
             int minid = 0x7FFFFFFF;
-
-            Mat original = new Mat();
-            bitmapToMat(bitmap, original);
 
             // 인식 된 부분의 ROI 영역 추출
             RectF roi_ = detections.get(i).getLocation();
@@ -460,102 +483,21 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     }
 
     private String model_name = "accuracy";
-    private String modelSelect = TF_OD_API_MODEL_FILE;
-    private int output_shape = TF_OD_API_OUTPUT_SHAPE;
-    private int input_size = TF_OD_API_INPUT_SIZE;
 
     @Override
     public void onClick(View v) {
         super.onClick(v);
-
-        YoloClassifier temp = detector;
-        Bitmap tempCropped = croppedBitmap;
-        Matrix tempFrame = frameToCropTransform;
-        Matrix tempCrop = cropToFrameTransform;
-
         switch(v.getId()) {
             case R.id.model_performance:
                 model_name = "accuracy";
-                modelSelect = TF_OD_API_MODEL_FILE;
-                output_shape = TF_OD_API_OUTPUT_SHAPE;
-                input_size = TF_OD_API_INPUT_SIZE_ACC;
-                is_tiny = true;
-
-                try {
-                    TF_OD_API_INPUT_SIZE = input_size;
-                    croppedBitmap = Bitmap.createBitmap(input_size, input_size, Config.ARGB_8888);
-
-                    frameToCropTransform =
-                            ImageUtils.getTransformationMatrix(
-                                    previewWidth, previewHeight,
-                                    input_size, input_size,
-                                    sensorOrientation, MAINTAIN_ASPECT);
-
-                    cropToFrameTransform = new Matrix();
-                    frameToCropTransform.invert(cropToFrameTransform);
-
-                    CENTER_POSITION = input_size / 2;
-
-                    detector = new YoloClassifier(
-                            getAssets(),
-                            modelSelect,
-                            TF_OD_API_LABELS_FILE,
-                            TF_OD_API_IS_QUANTIZED,
-                            input_size,
-                            output_shape,
-                            8);
-
-                    detector.setContext(this);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    detector = temp;
-                    croppedBitmap = tempCropped;
-                    frameToCropTransform = tempFrame;
-                    cropToFrameTransform = tempCrop;
-                }
+                TF_OD_API_INPUT_SIZE = TF_OD_API_INPUT_SIZE_ACC;
+                detector = detector_acc;
                 break;
 
             case R.id.model_speed:
                 model_name = "fast";
-                modelSelect = TF_OD_API_MODEL_FILE_FAST;
-                output_shape = TF_OD_API_OUTPUT_SHAPE_FAST;
-                input_size = TF_OD_API_INPUT_SIZE_FAST;
-                is_tiny = true;
-
-                try {
-                    TF_OD_API_INPUT_SIZE = input_size;
-                    croppedBitmap = Bitmap.createBitmap(input_size, input_size, Config.ARGB_8888);
-
-                    frameToCropTransform =
-                            ImageUtils.getTransformationMatrix(
-                                    previewWidth, previewHeight,
-                                    input_size, input_size,
-                                    sensorOrientation, MAINTAIN_ASPECT);
-
-                    cropToFrameTransform = new Matrix();
-                    frameToCropTransform.invert(cropToFrameTransform);
-
-                    CENTER_POSITION = input_size / 2;
-
-                    detector = new YoloClassifier(
-                            getAssets(),
-                            modelSelect,
-                            TF_OD_API_LABELS_FILE,
-                            TF_OD_API_IS_QUANTIZED,
-                            input_size,
-                            output_shape,
-                            8);
-
-                    detector.setContext(this);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    detector = temp;
-                    croppedBitmap = tempCropped;
-                    frameToCropTransform = tempFrame;
-                    cropToFrameTransform = tempCrop;
-                }
+                TF_OD_API_INPUT_SIZE = TF_OD_API_INPUT_SIZE_FAST;
+                detector = detector_fast;
                 break;
 
             case R.id.select_all:
