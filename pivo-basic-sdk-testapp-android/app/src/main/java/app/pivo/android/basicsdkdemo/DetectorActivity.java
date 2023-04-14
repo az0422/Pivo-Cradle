@@ -131,8 +131,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         tracker = new MultiBoxTracker(this);
 
-        int cropSize = TF_OD_API_INPUT_SIZE;
-
         try {
             detector_acc = new YoloClassifier(
                     getAssets(),
@@ -181,7 +179,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         frameToCropTransform =
                 ImageUtils.getTransformationMatrix(
                         previewWidth, previewHeight,
-                        cropSize, cropSize,
+                        TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE,
                         sensorOrientation, MAINTAIN_ASPECT);
 
         cropToFrameTransform = new Matrix();
@@ -269,10 +267,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                         final long startTime = SystemClock.uptimeMillis();
 
                         List<Classifier.Recognition> temp = new ArrayList<>();
+
                         try {
                             temp = detector.recognizeImage(input_bitmap);
                             temp = filter(rgbFrameBitmap, temp);
-                            //    previous = temp;
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -396,7 +394,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             mag2 += featureMap2[i] * featureMap2[i];
         }
         double similarity = dotProduct / (Math.sqrt(mag1) * Math.sqrt(mag2));
-        return similarity;
+        return similarity < 0 ? 0 : similarity;
     }
 
     private List<Classifier.Recognition> filter(Bitmap bitmap, List<Classifier.Recognition> detections) {
@@ -435,9 +433,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 if (!title.equals(detections.get(i).getTitle())) continue;
 
                 val = getSimilarity(prev, feature_map);
+                val = val < 0 ? 0 : val;
 
                 // 유사도 기반으로 기존 ID 검색
-                if (val > maxSimular && Integer.parseInt(key) < minid) {
+                if (val > maxSimular) {
                     maxSimular = val;
                     selectId = key;
                     minid = Integer.parseInt(key);
