@@ -217,6 +217,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     int prev_size = 0;
     Point center = null;
     Bitmap input_bitmap;
+    Bitmap feature_bitmap;
 
     @Override
     protected void processImage() {
@@ -233,6 +234,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         LOGGER.i("Preparing image " + currTimestamp + " for detection in bg thread.");
 
         rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
+        feature_bitmap = Bitmap.createBitmap(rgbFrameBitmap);
+
 
         Mat resize = new Mat();
         Utils.bitmapToMat(rgbFrameBitmap, resize);
@@ -240,7 +243,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         if (prev_size != TF_OD_API_INPUT_SIZE) {
             center = new Point(resize.height() / 2, resize.width() / 2);
-            rotateMatrix = Imgproc.getRotationMatrix2D(center, sensorOrientation, 1.0);
+            rotateMatrix = Imgproc.getRotationMatrix2D(center, sensorOrientation % 360 != 0 ? sensorOrientation - 180 : sensorOrientation - 0, 1.0);
             input_bitmap = Bitmap.createBitmap(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE, Config.ARGB_8888);
             prev_size = TF_OD_API_INPUT_SIZE;
 
@@ -257,6 +260,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         Imgproc.warpAffine(resize, resize, rotateMatrix, new org.opencv.core.Size(resize.height(), resize.width()));
         Utils.matToBitmap(resize, input_bitmap);
 
+        ImageUtils.saveBitmap(input_bitmap);
+
         readyForNextImage();
 
         runInBackground(
@@ -270,7 +275,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                         try {
                             temp = detector.recognizeImage(input_bitmap);
-                            temp = filter(rgbFrameBitmap, temp);
+                            temp = filter(feature_bitmap, temp);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -311,19 +316,12 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                         Log.e("CHECK", "run: " + results.size());
 
-                        float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
-                        switch (MODE) {
-                            case TF_OD_API:
-                                minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
-                                break;
-                        }
-
                         final List<Classifier.Recognition> mappedRecognitions =
                                 new LinkedList<Classifier.Recognition>();
 
                         for (final Classifier.Recognition result : results) {
                             final RectF location = result.getLocation();
-                            if (location != null && result.getConfidence() >= minimumConfidence) {
+                            if (location != null) {
 
                                 cropToFrameTransform.mapRect(location);
 
