@@ -82,7 +82,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private static int TF_OD_API_INPUT_SIZE = 640;
     private static int TF_OD_API_INPUT_SIZE_ACC = 640;
-    private static final String TF_OD_API_MODEL_FILE = "yolo-lite-acc-640_float16.tflite";
+    private static final String TF_OD_API_MODEL_FILE = "yolo-acc-6406_float16.tflite";
     private static int TF_OD_API_OUTPUT_SHAPE_ACC = 8400;
 
     private static final String TF_OD_API_MODEL_FILE_FAST = "yolo-lite-320_float16.tflite";
@@ -95,7 +95,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static final String TF_OD_API_LABELS_FILE = "obj.names";
 
     private static final DetectorMode MODE = DetectorMode.TF_OD_API;
-    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.45f;
+    private static final float MINIMUM_CONFIDENCE_TF_OD_API_FIRST = 0.75f;
+    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.3f;
     private static final boolean MAINTAIN_ASPECT = false;
     private static final Size DESIRED_PREVIEW_SIZE = new Size(1920, 1080);
     private static final float TEXT_SIZE_DIP = 10;
@@ -120,6 +121,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private BorderedText borderedText;
 
     private int FEATURE_INPUT_SIZE = 128;
+    private int save_id_time = 10;
 
     @Override
     public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -260,8 +262,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         Imgproc.warpAffine(resize, resize, rotateMatrix, new org.opencv.core.Size(resize.height(), resize.width()));
         Utils.matToBitmap(resize, input_bitmap);
 
-        ImageUtils.saveBitmap(input_bitmap);
-
         readyForNextImage();
 
         runInBackground(
@@ -378,6 +378,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private int idSequence = 0;
     private Map<String, Object[]> featureMaps = new HashMap<>();
+    private List<List<String>> saved_id_list = new ArrayList<>();
 
     public double getSimilarity(float[] featureMap1, float[] featureMap2) {
         if (featureMap1.length != featureMap2.length) {
@@ -398,18 +399,20 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private List<Classifier.Recognition> filter(Bitmap bitmap, List<Classifier.Recognition> detections) {
         Mat original = new Mat();
         bitmapToMat(bitmap, original);
+        List<String> id_list = new ArrayList<>();
 
-        for (int i = 0; i < detections.size(); i++) {
-            if (detections.get(i).getConfidence() < MINIMUM_CONFIDENCE_TF_OD_API) continue;
+        for (Classifier.Recognition detection : detections) {
+            float confidence = detection.getConfidence();
+            RectF location = detection.getLocation();
+            String title = detection.getTitle();
 
-            int minid = 0x7FFFFFFF;
+            if (confidence < MINIMUM_CONFIDENCE_TF_OD_API) continue;
 
             // 인식 된 부분의 ROI 영역 추출
-            RectF roi_ = detections.get(i).getLocation();
-            Rect roi_area = new Rect((int) (roi_.left / TF_OD_API_INPUT_SIZE * bitmap.getWidth()),
-                                     (int) (roi_.top / TF_OD_API_INPUT_SIZE * bitmap.getHeight()),
-                                     (int) (roi_.width() / TF_OD_API_INPUT_SIZE * bitmap.getWidth()),
-                                     (int) (roi_.height() / TF_OD_API_INPUT_SIZE * bitmap.getHeight()));
+            Rect roi_area = new Rect((int) (location.left / TF_OD_API_INPUT_SIZE * bitmap.getWidth()),
+                                     (int) (location.top / TF_OD_API_INPUT_SIZE * bitmap.getHeight()),
+                                     (int) (location.width() / TF_OD_API_INPUT_SIZE * bitmap.getWidth()),
+                                     (int) (location.height() / TF_OD_API_INPUT_SIZE * bitmap.getHeight()));
             Mat image = original.submat(roi_area);
             Imgproc.resize(image, image, new org.opencv.core.Size(FEATURE_INPUT_SIZE, FEATURE_INPUT_SIZE), Imgproc.INTER_LINEAR);
 
@@ -424,11 +427,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             for (String key : featureMaps.keySet()) {
                 float[] prev = (float[]) featureMaps.get(key)[0];
-                String title = (String) featureMaps.get(key)[1];
+                String feature_title = (String) featureMaps.get(key)[1];
                 long val_temp = 0;
                 double val;
 
-                if (!title.equals(detections.get(i).getTitle())) continue;
+                if (!feature_title.equals(title)) continue;
 
                 val = getSimilarity(prev, feature_map);
                 val = val < 0 ? 0 : val;
@@ -437,18 +440,44 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 if (val > maxSimular) {
                     maxSimular = val;
                     selectId = key;
-                    minid = Integer.parseInt(key);
                     simularity_temp = "" + val;
                 }
             }
 
+            boolean confidence_flag = false;
+
             // ID가 검색 되지 않은 경우 다음 번호로 ID 할당
             if ("".equals(selectId)) {
                 selectId = "" + idSequence++;
-                featureMaps.put(selectId, new Object[]{ feature_map, detections.get(i).getTitle() });
+                featureMaps.put(selectId, new Object[]{ feature_map, title });
             }
-            detections.get(i).setId(selectId); // + "S: " + simularity_temp);
+            else {
+                // 일정 시간 이내에 id가 검출되지 않으면 초기화
+                for (List<String> ids : saved_id_list) {
+                    for (String id : ids) {
+                        if (id.equals(selectId)) {
+                            confidence_flag = true;
+                            break;
+                        }
+                    }
+                    if (confidence_flag) break;
+                }
+            }
+
+            if (confidence_flag) {
+                if (confidence < MINIMUM_CONFIDENCE_TF_OD_API) continue;
+            } else {
+                if (confidence < MINIMUM_CONFIDENCE_TF_OD_API_FIRST) continue;
+            }
+
+            id_list.add(selectId);
+
+            detection.setId(selectId); // + "S: " + simularity_temp);
         }
+        if (saved_id_list.size() > save_id_time) {
+            saved_id_list.remove(0);
+        }
+        saved_id_list.add(id_list);
 
         return detections;
     }

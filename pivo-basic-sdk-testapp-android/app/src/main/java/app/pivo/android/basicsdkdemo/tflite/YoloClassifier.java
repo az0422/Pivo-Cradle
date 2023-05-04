@@ -7,6 +7,7 @@ import android.graphics.RectF;
 import android.util.Log;
 
 import org.tensorflow.lite.Interpreter;
+import org.tensorflow.lite.gpu.CompatibilityList;
 import org.tensorflow.lite.gpu.GpuDelegate;
 
 import java.io.BufferedReader;
@@ -63,10 +64,17 @@ public class YoloClassifier implements Classifier {
 
         try {
             Interpreter.Options options = new Interpreter.Options();
-            options.setNumThreads(NUM_THREADS);
+            CompatibilityList compatList = new CompatibilityList();
 
-            GpuDelegate gpuDelegate = new GpuDelegate();
-            options.addDelegate(gpuDelegate);
+            if(compatList.isDelegateSupportedOnThisDevice()){
+                // if the device has a supported GPU, add the GPU delegate
+                GpuDelegate.Options delegateOptions = compatList.getBestOptionsForThisDevice();
+                GpuDelegate gpuDelegate = new GpuDelegate(delegateOptions);
+                options.addDelegate(gpuDelegate);
+            } else {
+                // if the GPU is not supported, run on 4 threads
+                options.setNumThreads(NUM_THREADS);
+            }
 
             TFLITE = new Interpreter(Utils.loadModelFile(assetManager, modelFilename), options);
         } catch (Exception e) {
@@ -77,7 +85,7 @@ public class YoloClassifier implements Classifier {
         intValues = new int[INPUT_SIZE * INPUT_SIZE];
     }
 
-    protected float mNmsThresh = 0.7f;
+    protected float mNmsThresh = 0.75f;
 
     protected float box_union(RectF a, RectF b) {
         float i = box_intersection(a, b);
@@ -321,6 +329,11 @@ public class YoloClassifier implements Classifier {
 
                 final float w = out[0][2][i];
                 final float h = out[0][3][i];
+
+                if (w / INPUT_SIZE < 0.1 || h / INPUT_SIZE < 0.1) {
+                    continue;
+                }
+
                 Log.d("YoloV8Classifier",
                         Float.toString(xPos) + ',' + yPos + ',' + w + ',' + h);
 
@@ -453,6 +466,6 @@ public class YoloClassifier implements Classifier {
 
     @Override
     public float getObjThresh() {
-        return 0.45f;
+        return 0.3f;
     }
 }
