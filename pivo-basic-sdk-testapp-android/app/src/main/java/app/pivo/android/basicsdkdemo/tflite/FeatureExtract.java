@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.gpu.CompatibilityList;
+import org.tensorflow.lite.gpu.GpuDelegateFactory;
 import org.tensorflow.lite.nnapi.NnApiDelegate;
 import org.tensorflow.lite.gpu.GpuDelegate;
 import java.nio.ByteBuffer;
@@ -40,7 +41,7 @@ public class FeatureExtract {
 
             if(compatList.isDelegateSupportedOnThisDevice()){
                 // if the device has a supported GPU, add the GPU delegate
-                GpuDelegate.Options delegateOptions = compatList.getBestOptionsForThisDevice();
+                GpuDelegateFactory.Options delegateOptions = compatList.getBestOptionsForThisDevice();
                 GpuDelegate gpuDelegate = new GpuDelegate(delegateOptions);
                 options.addDelegate(gpuDelegate);
             } else {

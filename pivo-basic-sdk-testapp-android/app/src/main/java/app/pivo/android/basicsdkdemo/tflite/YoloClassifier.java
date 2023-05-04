@@ -9,6 +9,7 @@ import android.util.Log;
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.gpu.CompatibilityList;
 import org.tensorflow.lite.gpu.GpuDelegate;
+import org.tensorflow.lite.gpu.GpuDelegateFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -68,7 +69,7 @@ public class YoloClassifier implements Classifier {
 
             if(compatList.isDelegateSupportedOnThisDevice()){
                 // if the device has a supported GPU, add the GPU delegate
-                GpuDelegate.Options delegateOptions = compatList.getBestOptionsForThisDevice();
+                GpuDelegateFactory.Options delegateOptions = compatList.getBestOptionsForThisDevice();
                 GpuDelegate gpuDelegate = new GpuDelegate(delegateOptions);
                 options.addDelegate(gpuDelegate);
             } else {
