@@ -75,6 +75,7 @@ public class YoloClassifier implements Classifier {
             } else {
                 // if the GPU is not supported, run on 4 threads
                 options.setNumThreads(NUM_THREADS);
+                options.setUseNNAPI(true);
             }
 
             TFLITE = new Interpreter(Utils.loadModelFile(assetManager, modelFilename), options);

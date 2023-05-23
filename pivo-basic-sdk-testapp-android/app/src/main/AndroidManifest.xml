@@ -29,7 +29,8 @@
         <activity android:name="app.pivo.android.basicsdkdemo.PivoControllerActivity" />
         <activity android:name=".DetectorActivity" />
 
-        <activity android:name="app.pivo.android.basicsdkdemo.PivoScanningActivity">
+        <activity android:name="app.pivo.android.basicsdkdemo.PivoScanningActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
