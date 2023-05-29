@@ -67,16 +67,20 @@ public class YoloClassifier implements Classifier {
             Interpreter.Options options = new Interpreter.Options();
             CompatibilityList compatList = new CompatibilityList();
 
-            if(compatList.isDelegateSupportedOnThisDevice()){
-                // if the device has a supported GPU, add the GPU delegate
-                GpuDelegateFactory.Options delegateOptions = compatList.getBestOptionsForThisDevice();
-                GpuDelegate gpuDelegate = new GpuDelegate(delegateOptions);
-                options.addDelegate(gpuDelegate);
-            } else {
-                // if the GPU is not supported, run on 4 threads
-                options.setNumThreads(NUM_THREADS);
-                options.setUseNNAPI(true);
-            }
+            GpuDelegateFactory.Options delegateOptions = compatList.getBestOptionsForThisDevice();
+            GpuDelegate gpuDelegate = new GpuDelegate(delegateOptions);
+            options.addDelegate(gpuDelegate);
+
+//            if(compatList.isDelegateSupportedOnThisDevice()){
+//                // if the device has a supported GPU, add the GPU delegate
+//                GpuDelegateFactory.Options delegateOptions = compatList.getBestOptionsForThisDevice();
+//                GpuDelegate gpuDelegate = new GpuDelegate(delegateOptions);
+//                options.addDelegate(gpuDelegate);
+//            } else {
+//                // if the GPU is not supported, run on 4 threads
+//                options.setNumThreads(NUM_THREADS);
+//                options.setUseNNAPI(true);
+//            }
 
             TFLITE = new Interpreter(Utils.loadModelFile(assetManager, modelFilename), options);
         } catch (Exception e) {

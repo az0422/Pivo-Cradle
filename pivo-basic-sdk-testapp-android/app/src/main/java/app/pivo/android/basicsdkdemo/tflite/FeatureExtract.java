@@ -22,9 +22,6 @@ import app.pivo.android.basicsdkdemo.env.Utils;
 public class FeatureExtract {
     private int INPUT_SIZE;
     private int OUTPUT_SHAPE;
-    private Vector<String> labels = new Vector<>();
-
-    private int NUM_THREADS = 4;
     private Interpreter TFLITE;
 
     public FeatureExtract(final AssetManager assetManager,
@@ -37,17 +34,7 @@ public class FeatureExtract {
 
         try {
             Interpreter.Options options = new Interpreter.Options();
-            CompatibilityList compatList = new CompatibilityList();
-
-            if(compatList.isDelegateSupportedOnThisDevice()){
-                // if the device has a supported GPU, add the GPU delegate
-                GpuDelegateFactory.Options delegateOptions = compatList.getBestOptionsForThisDevice();
-                GpuDelegate gpuDelegate = new GpuDelegate(delegateOptions);
-                options.addDelegate(gpuDelegate);
-            } else {
-                // if the GPU is not supported, run on 4 threads
-                options.setNumThreads(NUM_THREADS);
-            }
+            options.setUseNNAPI(true);
 
             TFLITE = new Interpreter(Utils.loadModelFile(assetManager, modelFilename), options);
         } catch (Exception e) {
