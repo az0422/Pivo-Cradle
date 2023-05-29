@@ -82,7 +82,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private static int TF_OD_API_INPUT_SIZE = 640;
     private static int TF_OD_API_INPUT_SIZE_ACC = 640;
-    private static final String TF_OD_API_MODEL_FILE = "last_float16.tflite";
+    private static final String TF_OD_API_MODEL_FILE = "yolo-lite-acc-640_float16.tflite";
     private static int TF_OD_API_OUTPUT_SHAPE_ACC = 8400;
 
     private static final String TF_OD_API_MODEL_FILE_FAST = "yolo-lite-320_float16.tflite";
@@ -221,6 +221,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     Bitmap input_bitmap;
     Bitmap feature_bitmap;
 
+    int no_detected_counts = 0;
+    int frame_count = 0;
+
     @Override
     protected void processImage() {
         ++timestamp;
@@ -269,6 +272,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     @Override
                     public void run() {
                         LOGGER.i("Running detection on image " + currTimestamp);
+                        frame_count ++;
                         final long startTime = SystemClock.uptimeMillis();
 
                         List<Classifier.Recognition> temp = new ArrayList<>();
@@ -310,6 +314,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                             Log.i("Position", "" + position);
                         } else {
                             PivoSdk.getInstance().stop();
+                            no_detected_counts ++;
                         }
 
                         lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
@@ -342,6 +347,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                                         showFrameInfo(previewWidth + "x" + previewHeight);
                                         showCropInfo(TF_OD_API_INPUT_SIZE + "x" + TF_OD_API_INPUT_SIZE);
                                         showInference(lastProcessingTimeMs + "ms");
+
+                                        ((TextView) findViewById(R.id.no_detected_frames)).setText("" + no_detected_counts);
+                                        ((TextView) findViewById(R.id.frame_counts)).setText("" + frame_count);
                                     }
                                 });
                     }
