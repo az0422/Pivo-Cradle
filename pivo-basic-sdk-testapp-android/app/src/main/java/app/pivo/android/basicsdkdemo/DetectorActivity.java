@@ -82,7 +82,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private static int TF_OD_API_INPUT_SIZE = 640;
     private static int TF_OD_API_INPUT_SIZE_ACC = 640;
-    private static final String TF_OD_API_MODEL_FILE = "yolo-lite-acc-640_float16.tflite";
+    private static final String TF_OD_API_MODEL_FILE = "best_float16.tflite";
     private static int TF_OD_API_OUTPUT_SHAPE_ACC = 8400;
 
     private static final String TF_OD_API_MODEL_FILE_FAST = "yolo-lite-320_float16.tflite";
@@ -90,7 +90,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static int TF_OD_API_INPUT_SIZE_FAST = 320;
 
     private static float CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
-
 
     private static final String TF_OD_API_LABELS_FILE = "obj.names";
 
@@ -526,12 +525,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 model_name = "accuracy";
                 TF_OD_API_INPUT_SIZE = TF_OD_API_INPUT_SIZE_ACC;
                 detector = detector_acc;
+                CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
                 break;
 
             case R.id.model_speed:
                 model_name = "fast";
                 TF_OD_API_INPUT_SIZE = TF_OD_API_INPUT_SIZE_FAST;
                 detector = detector_fast;
+                CENTER_POSITION = TF_OD_API_INPUT_SIZE_FAST / 2;
                 break;
 
             case R.id.select_all:
