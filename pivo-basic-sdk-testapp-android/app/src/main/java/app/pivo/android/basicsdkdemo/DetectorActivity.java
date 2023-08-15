@@ -83,7 +83,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static int TF_OD_API_INPUT_SIZE = 640;
     private static int TF_OD_API_INPUT_SIZE_ACC = 640;
     private static final String TF_OD_API_MODEL_FILE = "best_float16.tflite";
-    private static int TF_OD_API_OUTPUT_SHAPE_ACC = 8400;
+    private static int TF_OD_API_OUTPUT_SHAPE_ACC = 2000;
 
     private static final String TF_OD_API_MODEL_FILE_FAST = "yolo-lite-320_float16.tflite";
     private static int TF_OD_API_OUTPUT_SHAPE_FAST = 500;
@@ -140,7 +140,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     TF_OD_API_IS_QUANTIZED,
                     TF_OD_API_INPUT_SIZE_ACC,
                     TF_OD_API_OUTPUT_SHAPE_ACC,
-                    8);
+                    8.1f);
             detector_fast = new YoloClassifier(
                     getAssets(),
                     TF_OD_API_MODEL_FILE_FAST,

@@ -29,7 +29,7 @@ import app.pivo.android.basicsdkdemo.env.Utils;
 
 public class YoloClassifier implements Classifier {
     private int INPUT_SIZE;
-    private int YOLO_VERSION;
+    private float YOLO_VERSION;
     private int OUTPUT_SHAPE;
     private Vector<String> labels = new Vector<>();
 
@@ -46,7 +46,7 @@ public class YoloClassifier implements Classifier {
                           final boolean isQuantized,
                           final int input_size,
                           final int output_shape,
-                          final int yolo_version) throws IOException {
+                          final float yolo_version) throws IOException {
 
         INPUT_SIZE = input_size;
         YOLO_VERSION = yolo_version;
@@ -336,9 +336,62 @@ public class YoloClassifier implements Classifier {
                 final float w = out[0][2][i];
                 final float h = out[0][3][i];
 
-                if (w / INPUT_SIZE < 0.1 || h / INPUT_SIZE < 0.1) {
-                    continue;
+                Log.d("YoloV8Classifier",
+                        Float.toString(xPos) + ',' + yPos + ',' + w + ',' + h);
+
+                final RectF rect =
+                        new RectF(
+                                Math.max(0, xPos - w / 2),
+                                Math.max(0, yPos - h / 2),
+                                Math.min(bitmap.getWidth() - 1, xPos + w / 2),
+                                Math.min(bitmap.getHeight() - 1, yPos + h / 2));
+                detections.add(new Recognition("" + offset, labels.get(detectedClass),
+                        confidenceInClass, rect, detectedClass));
+            }
+        }
+
+        return nms(detections);
+    }
+
+    private List<Recognition> recognizeImageV8r1(ByteBuffer byteBuffer, Bitmap bitmap) {
+        ArrayList<Recognition> detections = new ArrayList<Recognition>();
+        Map<Integer, Object> outputMap = new HashMap<>();
+
+        //outputMap.put(0, ByteBuffer.allocateDirect(1 * OUTPUT_SHAPE[0] * (labels.size() + 5) * 4));
+        outputMap.put(0, new float[1][4 + labels.size()][OUTPUT_SHAPE]);
+        Object[] inputArray = {byteBuffer};
+
+        Log.i("null reference", "" + outputMap + " " + inputArray);
+
+        TFLITE.runForMultipleInputsOutputs(inputArray, outputMap);
+
+        float[][][] out = (float[][][])outputMap.get(0);
+
+        for (int i = 0; i < OUTPUT_SHAPE; i++) {
+            final int offset = 0;
+            int detectedClass = -1;
+            float maxClass = 0;
+
+            final float[] classes = new float[labels.size()];
+
+            for (int c = 0; c < labels.size(); c++) {
+                classes[c] = out[0][4 + c][i];
+            }
+
+            for (int c = 0; c < labels.size(); c++) {
+                if (classes[c] > maxClass) {
+                    detectedClass = c;
+                    maxClass = classes[c];
                 }
+            }
+
+            final float confidenceInClass = maxClass;
+            if (confidenceInClass > getObjThresh()) {
+                final float xPos = out[0][0][i] * INPUT_SIZE;
+                final float yPos = out[0][1][i] * INPUT_SIZE;
+
+                final float w = out[0][2][i] * INPUT_SIZE;
+                final float h = out[0][3][i] * INPUT_SIZE;
 
                 Log.d("YoloV8Classifier",
                         Float.toString(xPos) + ',' + yPos + ',' + w + ',' + h);
@@ -440,6 +493,10 @@ public class YoloClassifier implements Classifier {
         else if (YOLO_VERSION == 8) {
             ByteBuffer byteBuffer = convertBitmapToByteBuffer(bitmap);
             return recognizeImageV8(byteBuffer, bitmap);
+        }
+        else if (YOLO_VERSION == 8.1f) {
+            ByteBuffer byteBuffer = convertBitmapToByteBuffer(bitmap);
+            return recognizeImageV8r1(byteBuffer, bitmap);
         }
 
         return null;
