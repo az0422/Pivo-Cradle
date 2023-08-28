@@ -223,7 +223,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     int no_detected_counts = 0;
     int frame_count = 0;
 
-    float prev_position = 0.5f;
+    float prev_position = -1f;
+    int min_speed = 48;
+    int prev_speed = min_speed;
 
     @Override
     protected void processImage() {
@@ -296,28 +298,39 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                             }
                         }
                         if (results.size() > 0) {
-                            float position = results.get(0).getLocation().centerX() / TF_OD_API_INPUT_SIZE;
-
+                            final float position = results.get(0).getLocation().centerX() / TF_OD_API_INPUT_SIZE;
 
                             runInBackground(() -> {
-                                if (position < CENTER_POSITION + 0.15f) {
-                                    PivoSdk.getInstance().turnLeftContinuously((int)
-                                            (20 * (1 - Math.pow(CENTER_POSITION - position, 1)
-                                            - (4 * (1 - Math.pow(Math.abs(position - prev_position), 1)))
-                                            ))
-                                    );
-                                } else if (CENTER_POSITION - 0.15f < position) {
-                                    PivoSdk.getInstance().turnRightContinuously((int)
-                                            (20 * (1 - Math.pow(position - CENTER_POSITION, 1)
-                                            - (4 * (1 - Math.pow(Math.abs(position - prev_position), 1)))
-                                            ))
-                                    );
+                                float position_thread = position;
+                                int speed;
+                                if (position_thread < CENTER_POSITION - 0.05f) {
+                                    speed = -1;
+                                } else if (position_thread > CENTER_POSITION + 0.05f) {
+                                    speed = 1;
+                                } else {
+                                    speed = 0;
+                                }
+
+                                if (prev_position == -1f) {
+                                    speed *= 48;
+                                } else {
+                                    if (position_thread < prev_position - 0.05f && prev_position + 0.05f < position_thread) {
+                                        speed = prev_speed;
+                                    } else {
+                                        speed *= (48 * (1 - Math.pow(Math.abs(prev_position - position_thread), 0.175)));
+                                    }
+                                }
+
+                                if (speed < 0) {
+                                    PivoSdk.getInstance().turnLeftContinuously(-speed);
+                                } else if (speed > 0) {
+                                    PivoSdk.getInstance().turnRightContinuously(speed);
                                 } else {
                                     PivoSdk.getInstance().stop();
                                 }
+                                prev_position = position;
+                                prev_speed = speed;
                             });
-
-                            prev_position = position;
 
                             runOnUiThread(() -> {
                                 ((TextView) findViewById(R.id.object_center_position)).setText(position + "px");
