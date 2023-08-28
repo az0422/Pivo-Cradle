@@ -226,6 +226,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     float prev_position = -1f;
     int min_speed = 48;
     int prev_speed = min_speed;
+    float padding_position = 0.05f;
 
     @Override
     protected void processImage() {
@@ -303,21 +304,23 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                             runInBackground(() -> {
                                 float position_thread = position;
                                 int speed;
-                                if (position_thread < CENTER_POSITION - 0.05f) {
+                                if (position_thread < CENTER_POSITION - padding_position) {
                                     speed = -1;
-                                } else if (position_thread > CENTER_POSITION + 0.05f) {
+                                } else if (position_thread > CENTER_POSITION + padding_position) {
                                     speed = 1;
                                 } else {
                                     speed = 0;
                                 }
 
                                 if (prev_position == -1f) {
-                                    speed *= 48;
+                                    speed *= min_speed;
+                                    prev_position = position_thread;
                                 } else {
-                                    if (position_thread < prev_position - 0.05f && prev_position + 0.05f < position_thread) {
+                                    if (prev_position - padding_position < position_thread && position_thread < prev_position + padding_position) {
                                         speed = prev_speed;
                                     } else {
-                                        speed *= (48 * (1 - Math.pow(Math.abs(prev_position - position_thread), 0.175)));
+                                        speed *= (min_speed * (1 - Math.pow(Math.abs(prev_position - position_thread), 0.175)));
+                                        prev_position = position_thread;
                                     }
                                 }
 
@@ -328,7 +331,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                                 } else {
                                     PivoSdk.getInstance().stop();
                                 }
-                                prev_position = position;
                                 prev_speed = speed;
                             });
 
