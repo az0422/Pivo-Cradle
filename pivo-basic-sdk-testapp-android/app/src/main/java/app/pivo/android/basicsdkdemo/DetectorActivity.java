@@ -89,7 +89,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static int TF_OD_API_OUTPUT_SHAPE_FAST = 500;
     private static int TF_OD_API_INPUT_SIZE_FAST = 320;
 
-    private static float CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
+    private static float CENTER_POSITION = 0.5f;
 
     private static final String TF_OD_API_LABELS_FILE = "obj.names";
 
@@ -223,6 +223,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     int no_detected_counts = 0;
     int frame_count = 0;
 
+    float prev_position = 0.5f;
+
     @Override
     protected void processImage() {
         ++timestamp;
@@ -294,17 +296,28 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                             }
                         }
                         if (results.size() > 0) {
-                            float position = results.get(0).getLocation().centerX();
+                            float position = results.get(0).getLocation().centerX() / TF_OD_API_INPUT_SIZE;
+
 
                             runInBackground(() -> {
-                                if (position < CENTER_POSITION - TF_OD_API_INPUT_SIZE / 10) {
-                                    PivoSdk.getInstance().turnLeftContinuously((int) (30 * (1 - (CENTER_POSITION - position) / CENTER_POSITION)));
-                                } else if (CENTER_POSITION + TF_OD_API_INPUT_SIZE / 10 < position) {
-                                    PivoSdk.getInstance().turnRightContinuously((int) (30 * (1 - (position - CENTER_POSITION) / CENTER_POSITION)));
+                                if (position < CENTER_POSITION + 0.15f) {
+                                    PivoSdk.getInstance().turnLeftContinuously((int)
+                                            (20 * (1 - Math.pow(CENTER_POSITION - position, 1)
+                                            - (4 * (1 - Math.pow(Math.abs(position - prev_position), 1)))
+                                            ))
+                                    );
+                                } else if (CENTER_POSITION - 0.15f < position) {
+                                    PivoSdk.getInstance().turnRightContinuously((int)
+                                            (20 * (1 - Math.pow(position - CENTER_POSITION, 1)
+                                            - (4 * (1 - Math.pow(Math.abs(position - prev_position), 1)))
+                                            ))
+                                    );
                                 } else {
                                     PivoSdk.getInstance().stop();
                                 }
                             });
+
+                            prev_position = position;
 
                             runOnUiThread(() -> {
                                 ((TextView) findViewById(R.id.object_center_position)).setText(position + "px");
@@ -525,14 +538,12 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 model_name = "accuracy";
                 TF_OD_API_INPUT_SIZE = TF_OD_API_INPUT_SIZE_ACC;
                 detector = detector_acc;
-                CENTER_POSITION = TF_OD_API_INPUT_SIZE / 2;
                 break;
 
             case R.id.model_speed:
                 model_name = "fast";
                 TF_OD_API_INPUT_SIZE = TF_OD_API_INPUT_SIZE_FAST;
                 detector = detector_fast;
-                CENTER_POSITION = TF_OD_API_INPUT_SIZE_FAST / 2;
                 break;
 
             case R.id.select_all:
