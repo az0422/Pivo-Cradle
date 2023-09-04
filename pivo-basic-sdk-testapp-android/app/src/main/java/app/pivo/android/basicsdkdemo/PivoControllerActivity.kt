@@ -24,7 +24,7 @@ class PivoControllerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_pivo_controller)
 
         //get Pivo supported speed list
-        val speedList = PivoSdk.getInstance().supportedSpeedsInSecondsPerRound.toMutableList()
+        val speedList = PivoSdk.getInstance().supportedSpeeds.toMutableList()
 
         //show pivo version
         version_view.text =
@@ -75,7 +75,7 @@ class PivoControllerActivity : AppCompatActivity() {
                     TAG,
                     "onSpeedChange: ${speedList[position]} save: ${save_speed_view.isChecked}"
                 )
-                PivoSdk.getInstance().setSpeedBySecondsPerRound(speedList[position])
+                PivoSdk.getInstance().setSpeed(speedList[position])
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}

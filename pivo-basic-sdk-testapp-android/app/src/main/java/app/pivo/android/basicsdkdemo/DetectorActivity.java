@@ -300,42 +300,36 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                         }
                         if (results.size() > 0) {
                             final float position = results.get(0).getLocation().centerX() / TF_OD_API_INPUT_SIZE;
+                            String id = results.get(0).getId();
 
                             runInBackground(() -> {
                                 float position_thread = position;
-                                int speed;
+                                int velocity, speed;
                                 if (position_thread < CENTER_POSITION - padding_position) {
-                                    speed = -1;
+                                    velocity = -1;
                                 } else if (position_thread > CENTER_POSITION + padding_position) {
-                                    speed = 1;
+                                    velocity = 1;
                                 } else {
-                                    speed = 0;
+                                    velocity = 0;
                                 }
+                                speed = (int) (6 / (Math.abs(position_thread - 0.5f) * 2));
 
-                                if (prev_position == -1f) {
-                                    speed *= min_speed;
-                                    prev_position = position_thread;
-                                } else {
-                                    if (prev_position - padding_position < position_thread && position_thread < prev_position + padding_position) {
-                                        speed = prev_speed;
-                                    } else {
-                                        speed *= (min_speed * (1 - Math.pow(Math.abs(prev_position - position_thread), 0.175)));
-                                        prev_position = position_thread;
-                                    }
-                                }
+                                velocity *= speed < 128 ? speed : 128;
 
-                                if (speed < 0) {
-                                    PivoSdk.getInstance().turnLeftContinuously(-speed);
-                                } else if (speed > 0) {
-                                    PivoSdk.getInstance().turnRightContinuously(speed);
+                                if (velocity < -6) {
+                                    PivoSdk.getInstance().turnLeftContinuously((-velocity / 2) * 2);
+                                } else if (velocity > 6) {
+                                    PivoSdk.getInstance().turnRightContinuously((velocity / 2) * 2);
                                 } else {
                                     PivoSdk.getInstance().stop();
                                 }
-                                prev_speed = speed;
+
+                                Log.i("Tracking Log", "Object ID: " + id + " position: " + position_thread + " angular velocity: " + velocity);
+                                prev_speed = velocity;
                             });
 
                             runOnUiThread(() -> {
-                                ((TextView) findViewById(R.id.object_center_position)).setText(position + "px");
+                                ((TextView) findViewById(R.id.object_center_position)).setText(prev_speed + "");
                             });
 
                             Log.i("Position", "" + position);

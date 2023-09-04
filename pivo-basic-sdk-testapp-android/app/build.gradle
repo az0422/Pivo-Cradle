@@ -71,7 +71,7 @@ dependencies {
     /**
      * PivoBasic SDK 1.0.6
      */
-    implementation("app.pivo.android.basicsdk:basicsdk:1.0.6")
+    implementation "app.pivo.android.basicsdk:basicsdk:1.0.9"
 
     /**
      * Unit testing dependencies
