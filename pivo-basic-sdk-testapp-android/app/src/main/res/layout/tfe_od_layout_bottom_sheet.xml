@@ -248,29 +248,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Frame counts"/>
+            android:text="Error rate"/>
 
         <TextView
-            android:id="@+id/frame_counts"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="right"
-            android:text="0"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="No detected frames"/>
-
-        <TextView
-            android:id="@+id/no_detected_frames"
+            android:id="@+id/error_rate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -295,6 +276,13 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="fast"/>
+
+        <Button
+            android:id="@+id/model_yolov8s"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="YOLOv8s"/>
 
     </LinearLayout>
 

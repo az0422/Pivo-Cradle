@@ -82,12 +82,16 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private static int TF_OD_API_INPUT_SIZE = 640;
     private static int TF_OD_API_INPUT_SIZE_ACC = 640;
-    private static final String TF_OD_API_MODEL_FILE = "best_float16.tflite";
-    private static int TF_OD_API_OUTPUT_SHAPE_ACC = 2000;
+    private static final String TF_OD_API_MODEL_FILE = "yolov8s-640_float16.tflite";
+    private static int TF_OD_API_OUTPUT_SHAPE_ACC = 8400;
 
     private static final String TF_OD_API_MODEL_FILE_FAST = "yolo-lite-320_float16.tflite";
     private static int TF_OD_API_OUTPUT_SHAPE_FAST = 500;
     private static int TF_OD_API_INPUT_SIZE_FAST = 320;
+
+    private static final String TF_OD_API_MODEL_FILE_YOLOv8s = "yolov8s-640_float16.tflite";
+    private static int TF_OD_API_OUTPUT_SHAPE_YOLOv8s = 8400;
+    private static int TF_OD_API_INPUT_SIZE_YOLOv8s = 640;
 
     private static float CENTER_POSITION = 0.5f;
 
@@ -105,6 +109,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private YoloClassifier detector;
     private YoloClassifier detector_acc;
     private YoloClassifier detector_fast;
+    private YoloClassifier detector_yolov8s;
     private FeatureExtract extractor;
 
     private long lastProcessingTimeMs;
@@ -140,7 +145,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     TF_OD_API_IS_QUANTIZED,
                     TF_OD_API_INPUT_SIZE_ACC,
                     TF_OD_API_OUTPUT_SHAPE_ACC,
-                    8.1f);
+                    8);
+
             detector_fast = new YoloClassifier(
                     getAssets(),
                     TF_OD_API_MODEL_FILE_FAST,
@@ -149,6 +155,15 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     TF_OD_API_INPUT_SIZE_FAST,
                     TF_OD_API_OUTPUT_SHAPE_FAST,
                     8);
+
+            detector_yolov8s = new YoloClassifier(
+                    getAssets(),
+                    TF_OD_API_MODEL_FILE_YOLOv8s,
+                    TF_OD_API_LABELS_FILE,
+                    TF_OD_API_IS_QUANTIZED,
+                    TF_OD_API_INPUT_SIZE_YOLOv8s,
+                    TF_OD_API_OUTPUT_SHAPE_YOLOv8s,
+                    8.1f);
 
             detector = detector_acc;
 
@@ -223,10 +238,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     int no_detected_counts = 0;
     int frame_count = 0;
 
-    float prev_position = -1f;
-    int min_speed = 48;
-    int prev_speed = min_speed;
-    float padding_position = 0.05f;
+    float padding_position = 0.1f;
+    float prev_position = 0f;
+    float error_rate_acc = 0;
+    float error_rate = 0;
+
 
     @Override
     protected void processImage() {
@@ -276,7 +292,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     @Override
                     public void run() {
                         LOGGER.i("Running detection on image " + currTimestamp);
-                        frame_count ++;
                         final long startTime = SystemClock.uptimeMillis();
 
                         List<Classifier.Recognition> temp = new ArrayList<>();
@@ -304,32 +319,45 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                             runInBackground(() -> {
                                 float position_thread = position;
-                                int velocity, speed;
-                                if (position_thread < CENTER_POSITION - padding_position) {
-                                    velocity = -1;
-                                } else if (position_thread > CENTER_POSITION + padding_position) {
-                                    velocity = 1;
+                                float position_adj;
+                                int velocity;
+
+                                if (CENTER_POSITION - padding_position < position_thread && position_thread < CENTER_POSITION + padding_position) {
+                                    position_adj = 0;
                                 } else {
-                                    velocity = 0;
+                                    position_adj = (position_thread - 0.5f) * 2;
                                 }
-                                speed = (int) (6 / (Math.abs(position_thread - 0.5f) * 2));
 
-                                velocity *= speed < 128 ? speed : 128;
+                                velocity = position_adj != 0 ? (int) (6 / position_adj) : 0;
 
-                                if (velocity < -6) {
+                                if (velocity > 128){
+                                    velocity = 128;
+                                } else if (velocity < -128) {
+                                    velocity = -128;
+                                }
+
+                                if (velocity < 0) {
                                     PivoSdk.getInstance().turnLeftContinuously((-velocity / 2) * 2);
-                                } else if (velocity > 6) {
+                                } else if (velocity > 0) {
                                     PivoSdk.getInstance().turnRightContinuously((velocity / 2) * 2);
                                 } else {
                                     PivoSdk.getInstance().stop();
                                 }
 
-                                Log.i("Tracking Log", "Object ID: " + id + " position: " + position_thread + " angular velocity: " + velocity);
-                                prev_speed = velocity;
+                                Log.i("Tracking Log", "Object ID: " + id + " position: " + position_adj + " angular velocity: " + velocity);
+
+                                if (!(prev_position - padding_position < position_adj && position_adj < prev_position + padding_position)) {
+                                    frame_count++;
+                                    error_rate_acc += Math.abs(prev_position - position_adj);
+
+                                    error_rate = error_rate_acc / frame_count;
+                                }
+                                prev_position = position_adj;
                             });
 
                             runOnUiThread(() -> {
-                                ((TextView) findViewById(R.id.object_center_position)).setText(prev_speed + "");
+                                ((TextView) findViewById(R.id.object_center_position)).setText(position + "");
+                                ((TextView) findViewById(R.id.error_rate)).setText("" + error_rate + "%");
                             });
 
                             Log.i("Position", "" + position);
@@ -368,9 +396,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                                         showFrameInfo(previewWidth + "x" + previewHeight);
                                         showCropInfo(TF_OD_API_INPUT_SIZE + "x" + TF_OD_API_INPUT_SIZE);
                                         showInference(lastProcessingTimeMs + "ms");
-
-                                        ((TextView) findViewById(R.id.no_detected_frames)).setText("" + no_detected_counts);
-                                        ((TextView) findViewById(R.id.frame_counts)).setText("" + frame_count);
                                     }
                                 });
                     }
