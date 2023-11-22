@@ -34,7 +34,7 @@ public class FeatureExtract {
 
         try {
             Interpreter.Options options = new Interpreter.Options();
-            options.setUseNNAPI(true);
+            //options.setUseNNAPI(true);
 
             TFLITE = new Interpreter(Utils.loadModelFile(assetManager, modelFilename), options);
         } catch (Exception e) {

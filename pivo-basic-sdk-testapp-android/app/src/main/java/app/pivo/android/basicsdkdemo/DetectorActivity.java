@@ -47,6 +47,7 @@ import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
@@ -85,7 +86,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static final String TF_OD_API_MODEL_FILE = "yolov8s-640_float16.tflite";
     private static int TF_OD_API_OUTPUT_SHAPE_ACC = 8400;
 
-    private static final String TF_OD_API_MODEL_FILE_FAST = "yolo-lite-320_float16.tflite";
+    private static final String TF_OD_API_MODEL_FILE_FAST = "yolov8-mobile-tiny_float16.tflite";
     private static int TF_OD_API_OUTPUT_SHAPE_FAST = 500;
     private static int TF_OD_API_INPUT_SIZE_FAST = 320;
 
@@ -142,7 +143,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     getAssets(),
                     TF_OD_API_MODEL_FILE,
                     TF_OD_API_LABELS_FILE,
-                    TF_OD_API_IS_QUANTIZED,
                     TF_OD_API_INPUT_SIZE_ACC,
                     TF_OD_API_OUTPUT_SHAPE_ACC,
                     8);
@@ -151,7 +151,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     getAssets(),
                     TF_OD_API_MODEL_FILE_FAST,
                     TF_OD_API_LABELS_FILE,
-                    TF_OD_API_IS_QUANTIZED,
                     TF_OD_API_INPUT_SIZE_FAST,
                     TF_OD_API_OUTPUT_SHAPE_FAST,
                     8);
@@ -160,7 +159,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     getAssets(),
                     TF_OD_API_MODEL_FILE_YOLOv8s,
                     TF_OD_API_LABELS_FILE,
-                    TF_OD_API_IS_QUANTIZED,
                     TF_OD_API_INPUT_SIZE_YOLOv8s,
                     TF_OD_API_OUTPUT_SHAPE_YOLOv8s,
                     8.1f);
@@ -179,9 +177,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         }
 
         extractor = new FeatureExtract(getAssets(),
-                         "feature_map.tflite",
+                         "feature-map.tflite",
                              FEATURE_INPUT_SIZE,
-                2048);
+                16384);
 
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
@@ -450,6 +448,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         return similarity < 0 ? 0 : similarity;
     }
 
+    private int roi_sequence = 0;
     private List<Classifier.Recognition> filter(Bitmap bitmap, List<Classifier.Recognition> detections) {
         Mat original = new Mat();
         bitmapToMat(bitmap, original);
@@ -460,15 +459,22 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             RectF location = detection.getLocation();
             String title = detection.getTitle();
 
+            Point center = new Point(original.height() / 2, original.height() / 2);
+            Mat rotateMatrix = Imgproc.getRotationMatrix2D(center, sensorOrientation % 360 != 0 ? sensorOrientation - 180 : sensorOrientation - 0, 1.0);
+            Imgproc.warpAffine(original, original, rotateMatrix, new org.opencv.core.Size(original.height(),original.width()));
+
             if (confidence < MINIMUM_CONFIDENCE_TF_OD_API) continue;
 
             // 인식 된 부분의 ROI 영역 추출
-            Rect roi_area = new Rect((int) (location.left / TF_OD_API_INPUT_SIZE * bitmap.getWidth()),
-                                     (int) (location.top / TF_OD_API_INPUT_SIZE * bitmap.getHeight()),
-                                     (int) (location.width() / TF_OD_API_INPUT_SIZE * bitmap.getWidth()),
-                                     (int) (location.height() / TF_OD_API_INPUT_SIZE * bitmap.getHeight()));
+            Rect roi_area = new Rect((int) (location.left / TF_OD_API_INPUT_SIZE * original.width()),
+                                     (int) (location.top / TF_OD_API_INPUT_SIZE * original.height()),
+                                     (int) (location.width() / TF_OD_API_INPUT_SIZE * original.width()),
+                                     (int) (location.height() / TF_OD_API_INPUT_SIZE * original.height()));
+
             Mat image = original.submat(roi_area);
             Imgproc.resize(image, image, new org.opencv.core.Size(FEATURE_INPUT_SIZE, FEATURE_INPUT_SIZE), Imgproc.INTER_LINEAR);
+
+            Imgcodecs.imwrite("/sdcard/" + (roi_sequence++) + ".jpg", image);
 
             Bitmap bitmap_image = Bitmap.createBitmap(image.width(), image.height(), Config.ARGB_8888);
             matToBitmap(image, bitmap_image);
@@ -517,6 +523,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     if (confidence_flag) break;
                 }
             }
+
+            Log.i("id assignment", selectId + "(" + simularity_temp + "%, " + detection.getTitle() + ")");
 
             if (confidence_flag) {
                 if (confidence < MINIMUM_CONFIDENCE_TF_OD_API) continue;

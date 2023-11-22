@@ -33,17 +33,11 @@ public class YoloClassifier implements Classifier {
     private int OUTPUT_SHAPE;
     private Vector<String> labels = new Vector<>();
 
-    private int NUM_THREADS = 4;
     private Interpreter TFLITE;
-
-    private ByteBuffer imgData;
-    private int CHANNELS = 4;
-    private int[] intValues;
 
     public YoloClassifier(final AssetManager assetManager,
                           final String modelFilename,
                           final String labelFilename,
-                          final boolean isQuantized,
                           final int input_size,
                           final int output_shape,
                           final float yolo_version) throws IOException {
@@ -66,6 +60,7 @@ public class YoloClassifier implements Classifier {
         try {
             Interpreter.Options options = new Interpreter.Options();
             CompatibilityList compatList = new CompatibilityList();
+            options.setUseXNNPACK(true);
 
             GpuDelegateFactory.Options delegateOptions = compatList.getBestOptionsForThisDevice();
             GpuDelegate gpuDelegate = new GpuDelegate(delegateOptions);
@@ -86,9 +81,6 @@ public class YoloClassifier implements Classifier {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        imgData = ByteBuffer.allocateDirect(1 * INPUT_SIZE * INPUT_SIZE * 3 * CHANNELS);
-        imgData.order(ByteOrder.nativeOrder());
-        intValues = new int[INPUT_SIZE * INPUT_SIZE];
     }
 
     protected float mNmsThresh = 0.75f;
@@ -379,7 +371,7 @@ public class YoloClassifier implements Classifier {
             }
 
             for (int c = 0; c < labels.size(); c++) {
-                if (classes[c] > maxClass) {
+                if (classes[c] > maxClass && classes[c] != 1.0) {
                     detectedClass = c;
                     maxClass = classes[c];
                 }
@@ -394,7 +386,7 @@ public class YoloClassifier implements Classifier {
                 final float h = out[0][3][i] * INPUT_SIZE;
 
                 Log.d("YoloV8Classifier",
-                        Float.toString(xPos) + ',' + yPos + ',' + w + ',' + h);
+                        Float.toString(xPos) + ',' + yPos + ',' + w + ',' + h + ", (" + confidenceInClass + ")");
 
                 final RectF rect =
                         new RectF(
