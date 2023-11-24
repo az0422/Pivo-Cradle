@@ -179,7 +179,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         extractor = new FeatureExtract(getAssets(),
                          "feature-map.tflite",
                              FEATURE_INPUT_SIZE,
-                16384);
+                8192);
 
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
@@ -461,7 +461,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             Point center = new Point(original.height() / 2, original.height() / 2);
             Mat rotateMatrix = Imgproc.getRotationMatrix2D(center, sensorOrientation % 360 != 0 ? sensorOrientation - 180 : sensorOrientation - 0, 1.0);
-            Imgproc.warpAffine(original, original, rotateMatrix, new org.opencv.core.Size(original.height(),original.width()));
+            Imgproc.warpAffine(original, original, rotateMatrix, new org.opencv.core.Size(original.height(), original.width()));
 
             if (confidence < MINIMUM_CONFIDENCE_TF_OD_API) continue;
 
